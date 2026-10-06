@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MER — App de controle de passageiros de van</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #000000;
+    color: #FFFFFF;
+    font-family: "DejaVu Sans", "Segoe UI", Arial, sans-serif;
+  }
+  #erd {
+    padding: 24px;
+    background: #000000;
+  }
+  #erd svg {
+    max-width: 100%;
+    height: auto;
+    background: #000000;
+  }
+
+  /* Texto sempre branco */
+  #erd svg text,
+  #erd svg .er.entityLabel,
+  #erd svg .er.attributeLabel,
+  #erd svg .er.relationshipLabel {
+    fill: #FFFFFF !important;
+    stroke: none !important;
+  }
+
+  /* Caixas das entidades e linhas de atributo: fundo preto, borda branca */
+  #erd svg .er.entityBox,
+  #erd svg .er.attributeBoxOdd,
+  #erd svg .er.attributeBoxEven {
+    fill: #000000 !important;
+    stroke: #FFFFFF !important;
+  }
+
+  /* Linhas de relacionamento e pe-de-galinha */
+  #erd svg .er.relationshipLine {
+    stroke: #FFFFFF !important;
+    fill: none !important;
+  }
+
+  /* Caixa atras do rotulo do relacionamento */
+  #erd svg .er.relationshipLabelBox {
+    fill: #000000 !important;
+    stroke: none !important;
+    opacity: 1 !important;
+  }
+
+  /* Divisorias internas das tabelas */
+  #erd svg .divider path,
+  #erd svg .divider rect {
+    stroke: #FFFFFF !important;
+    stroke-opacity: 0.6 !important;
+  }
+
+  /* Sem borda nas faixas de atributo (so a moldura externa e o cabecalho) */
+  #erd svg .row-rect-odd path,
+  #erd svg .row-rect-odd rect,
+  #erd svg .row-rect-even path,
+  #erd svg .row-rect-even rect {
+    stroke: none !important;
+    fill: #000000 !important;
+  }
+</style>
+</head>
+<body>
+<div id="erd"></div>
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+
+await document.fonts.ready;
+
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: '"DejaVu Sans", Arial, sans-serif',
+  themeVariables: {
+    darkMode: true,
+    fontSize: '13px',
+    fontFamily: '"DejaVu Sans", Arial, sans-serif',
+    background: '#000000',
+    mainBkg: '#000000',
+    nodeBorder: '#FFFFFF',
+    lineColor: '#FFFFFF',
+    textColor: '#FFFFFF',
+    primaryColor: '#000000',
+    primaryTextColor: '#FFFFFF',
+    primaryBorderColor: '#FFFFFF',
+    attributeBackgroundColorOdd: '#000000',
+    attributeBackgroundColorEven: '#000000',
+  },
+});
+
+const { svg } = await mermaid.render('erd-svg', `erDiagram
+  USUARIO ||--o{ TURMA : conduz
+  USUARIO ||--o{ TURMA_ALUNO : participa
+  GRUPO ||--o{ TURMA : agrupa
+  TURMA ||--o{ TURMA_ALUNO : matricula
+  TURMA ||--o{ VIAGEM : gera
+  TURMA_ALUNO ||--o{ CONFIRMACAO : declara
+  VIAGEM ||--o{ CONFIRMACAO : recebe
+  VIAGEM |o--o{ VIAGEM : absorve
+  USUARIO {
+    bigint id PK
+    string nome_pessoa
+    string email UK
+    string senha_hash
+    enum role "MOTORISTA ou ALUNO"
+    boolean admin "motorista-chefe"
+    string expo_push_token "anulavel"
+    boolean ativo
+  }
+  GRUPO {
+    bigint id PK
+    string nome
+    enum periodo
+    time horario_saida_ida
+    time horario_saida_volta
+  }
+  TURMA {
+    bigint id PK
+    bigint id_grupo FK "unico com id_motorista"
+    bigint id_motorista FK
+    string nome "texto livre"
+    int numero_van
+    int capacidade
+  }
+  TURMA_ALUNO {
+    bigint id PK
+    bigint id_turma FK "unico com id_aluno"
+    bigint id_aluno FK
+    boolean ativo
+  }
+  VIAGEM {
+    bigint id PK
+    bigint id_turma FK "unico com data"
+    date data
+    bigint id_viagem_absorvida_por FK "anulavel"
+  }
+  CONFIRMACAO {
+    bigint id PK
+    bigint id_viagem FK "unico com id_turma_aluno"
+    bigint id_turma_aluno FK
+    boolean inclui_ida
+    boolean inclui_volta
+    enum status_volta "EM_AULA ou LIBERADO"
+    boolean cancelou_apos_saida
+    datetime atualizado_em
+  }`);
+
+const host = document.getElementById('erd');
+host.innerHTML = svg;
+
+const root = host.querySelector('svg');
+root.style.background = '#000000';
+
+// Arredonda apenas a moldura externa de cada entidade
+root.querySelectorAll('.node').forEach(node => {
+  const firstPath = node.querySelector('path[d]');
+  if (!firstPath) return;
+  const nums = firstPath.getAttribute('d').match(/-?[\d.]+/g)?.map(Number);
+  if (!nums || nums.length < 8) return;
+  const xs = [nums[0], nums[2], nums[4], nums[6]];
+  const ys = [nums[1], nums[3], nums[5], nums[7]];
+  const x = Math.min(...xs), y = Math.min(...ys);
+  const w = Math.max(...xs) - x, h = Math.max(...ys) - y;
+  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  rect.setAttribute('x', x); rect.setAttribute('y', y);
+  rect.setAttribute('width', w); rect.setAttribute('height', h);
+  rect.setAttribute('rx', '8');
+  for (const a of ['fill', 'stroke', 'stroke-width', 'class', 'style']) {
+    if (firstPath.hasAttribute(a)) rect.setAttribute(a, firstPath.getAttribute(a));
+  }
+  firstPath.replaceWith(rect);
+});
+
+// Varredura final: garante branco/preto mesmo se o mermaid usar inline styles
+root.querySelectorAll('text, tspan').forEach(t => {
+  t.setAttribute('fill', '#FFFFFF');
+  t.style.fill = '#FFFFFF';
+});
+
+root.querySelectorAll('rect, path, line, polygon, polyline, circle').forEach(el => {
+  const cls = el.getAttribute('class') || '';
+  const isLabelBox = cls.includes('relationshipLabelBox');
+  const currentFill = el.getAttribute('fill') || el.style.fill;
+
+  el.setAttribute('stroke', isLabelBox ? 'none' : '#FFFFFF');
+  el.style.stroke = isLabelBox ? 'none' : '#FFFFFF';
+
+  if (currentFill && currentFill !== 'none' && currentFill !== 'transparent') {
+    el.setAttribute('fill', '#000000');
+    el.style.fill = '#000000';
+  }
+});
+
+// Divisorias internas ficam brancas mas discretas
+root.querySelectorAll('.divider path, .divider rect').forEach(el => {
+  el.setAttribute('stroke', '#FFFFFF');
+  el.setAttribute('stroke-opacity', '0.6');
+});
+</script>
+</body>
+</html>

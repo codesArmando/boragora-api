@@ -16,7 +16,7 @@
 
 | Etapa | Entrega | Status | Concluída em |
 |---|---|---|---|
-| 0 | Fundação | Não iniciada | |
+| 0 | Fundação | Concluída | 2026-10-07 |
 | 1 | Banco de dados e entidades | Não iniciada | |
 | 2 | Autenticação e usuários | Não iniciada | |
 | 3 | Grupos (CRUD) | Não iniciada | |
@@ -34,20 +34,20 @@ Valores de status: Não iniciada, Em andamento, Concluída.
 ## Etapa 0 — Fundação
 
 **Construção**
-- [ ] Projeto Spring Boot com Gradle e Java 21 gerado, com as dependências da seção 2.1 do plano
-- [ ] `docker-compose.yml` com MySQL 8
-- [ ] `application.yml` com perfis `dev` e `test`, e segredos lidos de variáveis de ambiente
-- [ ] Bean `Clock` no fuso `America/Sao_Paulo`
-- [ ] Propriedade `app.relogio.fixo` funcionando no perfil `dev`
-- [ ] `RegraDeNegocioException` com código e status HTTP
-- [ ] `@RestControllerAdvice` devolvendo erros no formato padrão (`codigo`, `mensagem`, `campos`)
-- [ ] Swagger UI habilitado
-- [ ] `GET /health` público
+- [x] Projeto Spring Boot com Gradle e Java 21 gerado, com as dependências da seção 2.1 do plano
+- [x] `docker-compose.yml` com MySQL 8
+- [x] `application.yml` com perfis `dev` e `test`, e segredos lidos de variáveis de ambiente
+- [x] Bean `Clock` no fuso `America/Sao_Paulo`
+- [x] Propriedade `app.relogio.fixo` funcionando no perfil `dev`
+- [x] `RegraDeNegocioException` com código e status HTTP
+- [x] `@RestControllerAdvice` devolvendo erros no formato padrão (`codigo`, `mensagem`, `campos`)
+- [x] Swagger UI habilitado
+- [x] `GET /health` público
 
 **Critérios de aceite**
-- [ ] `docker compose up` e `./gradlew bootRun` sobem sem erro *(verificação manual)*
-- [ ] `GET /health` responde 200
-- [ ] Rota inexistente responde 404 no formato padrão de erro
+- [x] `docker compose up` e `./gradlew bootRun` sobem sem erro *(verificação manual)*
+- [x] `GET /health` responde 200
+- [x] Rota inexistente responde 404 no formato padrão de erro
 
 ---
 
@@ -303,4 +303,9 @@ Registrar aqui tudo o que for decidido na implementação e não estiver no plan
 
 | Data | Etapa | Decisão | Motivo |
 |---|---|---|---|
-| | | | |
+| 2026-10-06 | 0 | MySQL do Docker Compose exposto na porta 3307 do host (configurável por `DB_PORTA`); imagem `mysql:8` (8.4) | Evitar conflito com um MySQL local que já esteja usando a 3306 |
+| 2026-10-06 | 0 | Perfil `dev` é o padrão e tem usuário e senha do banco com valor padrão igual ao do `docker-compose.yml`; fora do `dev` (e para JWT e admin em qualquer perfil) as variáveis de ambiente são obrigatórias | Subir o ambiente local sem configurar nada, sem colocar segredos reais no código |
+| 2026-10-06 | 0 | `app.relogio.fixo` só é lido no perfil `dev`; nos demais perfis o relógio é sempre o real | Evitar que um relógio congelado vá para outro ambiente por engano |
+| 2026-10-06 | 0 | Segurança provisória com todas as rotas liberadas, sem sessão e sem CSRF | As regras por prefixo e o JWT são da Etapa 2; sem isso a rota inexistente devolveria 401 em vez de 404 |
+| 2026-10-06 | 0 | Códigos de erro extras: `ERRO_INTERNO` (500, sem expor detalhes) e `REQUISICAO_INVALIDA` (outros 4xx do Spring, ex.: 405 e 415). JSON mal formado e parâmetro de tipo errado devolvem 400 `VALIDACAO` | A tabela da seção 2.3 não cobre esses casos, e todos os erros precisam sair no formato padrão |
+| 2026-10-06 | 0 | Testes usam Testcontainers com MySQL real (`TestcontainersConfiguration`), perfil `test` | Mesmo banco da execução real, como prevê a seção 2.1 |

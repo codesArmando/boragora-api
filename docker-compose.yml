@@ -1,0 +1,22 @@
+services:
+  mysql:
+    image: mysql:8
+    container_name: boragora-mysql
+    environment:
+      MYSQL_DATABASE: ${DB_NOME:-boragora}
+      MYSQL_USER: ${DB_USUARIO:-boragora}
+      MYSQL_PASSWORD: ${DB_SENHA:-boragora}
+      MYSQL_ROOT_PASSWORD: ${DB_SENHA_ROOT:-root}
+      TZ: America/Sao_Paulo
+    ports:
+      - "${DB_PORTA:-3307}:3306"
+    volumes:
+      - mysql-dados:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  mysql-dados:

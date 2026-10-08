@@ -17,7 +17,7 @@
 | Etapa | Entrega | Status | Concluída em |
 |---|---|---|---|
 | 0 | Fundação | Concluída | 2026-10-07 |
-| 1 | Banco de dados e entidades | Não iniciada | |
+| 1 | Banco de dados e entidades | Concluída | 2026-10-07 |
 | 2 | Autenticação e usuários | Não iniciada | |
 | 3 | Grupos (CRUD) | Não iniciada | |
 | 4 | Motoristas e turmas (CRUD) | Não iniciada | |
@@ -54,24 +54,24 @@ Valores de status: Não iniciada, Em andamento, Concluída.
 ## Etapa 1 — Banco de dados e entidades
 
 **Construção**
-- [ ] Migração `V1__criar_esquema.sql` com as tabelas `usuario`, `grupo`, `turma`, `turma_aluno`, `viagem` e `confirmacao`
-- [ ] Coluna `turma.nome` (`VARCHAR(60)`, obrigatória, sem unicidade)
-- [ ] Restrições de unicidade: `usuario.email`; `turma` (`id_grupo`, `id_motorista`); `turma_aluno` (`id_turma`, `id_aluno`); `viagem` (`id_turma`, `data`); `confirmacao` (`id_viagem`, `id_turma_aluno`)
-- [ ] Chaves estrangeiras em todas as colunas `id_*`
-- [ ] `ON DELETE CASCADE` em `turma_aluno.id_turma`, `viagem.id_turma`, `confirmacao.id_viagem` e `confirmacao.id_turma_aluno`
-- [ ] `ON DELETE SET NULL` em `viagem.id_viagem_absorvida_por`
-- [ ] Valores padrão das colunas (`admin`, `ativo`, `inclui_ida`, `inclui_volta`, `status_volta`, `cancelou_apos_saida`)
-- [ ] Enums `Papel`, `Periodo` e `StatusVolta`, gravados como texto
-- [ ] Entidades JPA das seis tabelas
-- [ ] Um repositório Spring Data por entidade
-- [ ] Hibernate configurado com `ddl-auto=validate`
+- [x] Migração `V1__criar_esquema.sql` com as tabelas `usuario`, `grupo`, `turma`, `turma_aluno`, `viagem` e `confirmacao`
+- [x] Coluna `turma.nome` (`VARCHAR(60)`, obrigatória, sem unicidade)
+- [x] Restrições de unicidade: `usuario.email`; `turma` (`id_grupo`, `id_motorista`); `turma_aluno` (`id_turma`, `id_aluno`); `viagem` (`id_turma`, `data`); `confirmacao` (`id_viagem`, `id_turma_aluno`)
+- [x] Chaves estrangeiras em todas as colunas `id_*`
+- [x] `ON DELETE CASCADE` em `turma_aluno.id_turma`, `viagem.id_turma`, `confirmacao.id_viagem` e `confirmacao.id_turma_aluno`
+- [x] `ON DELETE SET NULL` em `viagem.id_viagem_absorvida_por`
+- [x] Valores padrão das colunas (`admin`, `ativo`, `inclui_ida`, `inclui_volta`, `status_volta`, `cancelou_apos_saida`)
+- [x] Enums `Papel`, `Periodo` e `StatusVolta`, gravados como texto
+- [x] Entidades JPA das seis tabelas
+- [x] Um repositório Spring Data por entidade
+- [x] Hibernate configurado com `ddl-auto=validate`
 
 **Critérios de aceite**
-- [ ] A aplicação sobe com `ddl-auto=validate` sem erro
-- [ ] Teste grava e lê cada entidade
-- [ ] Teste confirma que cada restrição de unicidade rejeita duplicata
-- [ ] Teste confirma que apagar uma turma apaga seus vínculos, viagens e confirmações
-- [ ] Teste confirma que o banco rejeita apagar um grupo que tem turmas
+- [x] A aplicação sobe com `ddl-auto=validate` sem erro
+- [x] Teste grava e lê cada entidade
+- [x] Teste confirma que cada restrição de unicidade rejeita duplicata
+- [x] Teste confirma que apagar uma turma apaga seus vínculos, viagens e confirmações
+- [x] Teste confirma que o banco rejeita apagar um grupo que tem turmas
 
 ---
 
@@ -309,3 +309,8 @@ Registrar aqui tudo o que for decidido na implementação e não estiver no plan
 | 2026-10-06 | 0 | Segurança provisória com todas as rotas liberadas, sem sessão e sem CSRF | As regras por prefixo e o JWT são da Etapa 2; sem isso a rota inexistente devolveria 401 em vez de 404 |
 | 2026-10-06 | 0 | Códigos de erro extras: `ERRO_INTERNO` (500, sem expor detalhes) e `REQUISICAO_INVALIDA` (outros 4xx do Spring, ex.: 405 e 415). JSON mal formado e parâmetro de tipo errado devolvem 400 `VALIDACAO` | A tabela da seção 2.3 não cobre esses casos, e todos os erros precisam sair no formato padrão |
 | 2026-10-06 | 0 | Testes usam Testcontainers com MySQL real (`TestcontainersConfiguration`), perfil `test` | Mesmo banco da execução real, como prevê a seção 2.1 |
+| 2026-10-07 | 1 | Tamanhos das colunas de texto: `nome_pessoa` e `grupo.nome` 100, `email` 255, `senha_hash` 100, `expo_push_token` 255, `role` 20, `periodo` e `status_volta` 10 | O MER e o plano só definem o tamanho de `turma.nome` (60) |
+| 2026-10-07 | 1 | Colunas anuláveis: `expo_push_token`, `id_viagem_absorvida_por`, `turma.numero_van` e `turma.capacidade`; as demais são `NOT NULL` | Decisão da equipe: número da van e capacidade são dados cadastrais opcionais (o escopo diz que a van "pode ter" esses dados). Na Etapa 4, `numeroVan` e `capacidade` serão opcionais em `POST` e `PUT /admin/turmas` |
+| 2026-10-07 | 1 | `atualizado_em` sem valor padrão no banco; quem preenche é o service, com o `Clock` injetado | Seguir a convenção 2 da seção 2.3 (nada de `now()` fora do relógio) |
+| 2026-10-07 | 1 | Coluna `role` mapeada no campo `papel` (enum `Papel`) da entidade `Usuario` | Nome da coluna vem do MER; nome do enum vem do plano |
+| 2026-10-07 | 1 | Restrições com nome explícito (`uk_*`, `fk_*`), tabelas InnoDB em `utf8mb4` | Mensagens de erro identificáveis nos testes e suporte a acentos |

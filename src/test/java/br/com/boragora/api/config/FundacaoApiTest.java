@@ -6,22 +6,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MockMvc;
 
-import br.com.boragora.api.TestcontainersConfiguration;
+import br.com.boragora.api.DadosDeTeste;
+import br.com.boragora.api.TesteDeIntegracao;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-@Import(TestcontainersConfiguration.class)
+@TesteDeIntegracao
 class FundacaoApiTest {
 
     @Autowired
     private MockMvc mvc;
+    @Autowired
+    private DadosDeTeste dados;
 
     @Test
     void healthRespondeOk() throws Exception {
@@ -32,7 +29,7 @@ class FundacaoApiTest {
 
     @Test
     void rotaInexistenteResponde404NoFormatoPadrao() throws Exception {
-        mvc.perform(get("/rota-que-nao-existe"))
+        mvc.perform(get("/rota-que-nao-existe").header(HttpHeaders.AUTHORIZATION, dados.bearer(dados.aluno())))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.codigo").value("NAO_ENCONTRADO"))
                 .andExpect(jsonPath("$.mensagem").isNotEmpty())

@@ -18,7 +18,7 @@
 |---|---|---|---|
 | 0 | Fundação | Concluída | 2026-10-07 |
 | 1 | Banco de dados e entidades | Concluída | 2026-10-07 |
-| 2 | Autenticação e usuários | Não iniciada | |
+| 2 | Autenticação e usuários | Concluída | 2026-10-07 |
 | 3 | Grupos (CRUD) | Não iniciada | |
 | 4 | Motoristas e turmas (CRUD) | Não iniciada | |
 | 5 | Vínculo e remoção de alunos | Não iniciada | |
@@ -78,26 +78,26 @@ Valores de status: Não iniciada, Em andamento, Concluída.
 ## Etapa 2 — Autenticação e usuários
 
 **Construção**
-- [ ] `POST /auth/cadastro` (cria sempre aluno, sem vínculo com turma)
-- [ ] `POST /auth/login`
-- [ ] `GET /me`
-- [ ] Senha gravada com BCrypt e e-mail normalizado em minúsculas
-- [ ] Emissão e validação de JWT (HS256) com validade de 1 dia (`app.jwt.validade-horas`)
-- [ ] Usuário recarregado do banco a cada requisição
-- [ ] Autoridades `ROLE_ALUNO`, `ROLE_MOTORISTA` e `ROLE_ADMIN`
-- [ ] Regras de rota por prefixo (`/auth`, `/me`, `/aluno`, `/motorista`, `/admin`)
-- [ ] Componente `ControleDeAcesso` criado (regras de visibilidade serão usadas nas etapas 3, 4 e 7)
-- [ ] Criação do motorista-chefe inicial a partir de `ADMIN_NOME`, `ADMIN_EMAIL` e `ADMIN_SENHA`
+- [x] `POST /auth/cadastro` (cria sempre aluno, sem vínculo com turma)
+- [x] `POST /auth/login`
+- [x] `GET /me`
+- [x] Senha gravada com BCrypt e e-mail normalizado em minúsculas
+- [x] Emissão e validação de JWT (HS256) com validade de 1 dia (`app.jwt.validade-horas`)
+- [x] Usuário recarregado do banco a cada requisição
+- [x] Autoridades `ROLE_ALUNO`, `ROLE_MOTORISTA` e `ROLE_ADMIN`
+- [x] Regras de rota por prefixo (`/auth`, `/me`, `/aluno`, `/motorista`, `/admin`)
+- [x] Componente `ControleDeAcesso` criado (regras de visibilidade serão usadas nas etapas 3, 4 e 7)
+- [x] Criação do motorista-chefe inicial a partir de `ADMIN_NOME`, `ADMIN_EMAIL` e `ADMIN_SENHA`
 
 **Critérios de aceite**
-- [ ] Cadastro seguido de login devolve token válido, e `GET /me` devolve o usuário
-- [ ] Cadastro com e-mail repetido devolve 409 `EMAIL_JA_CADASTRADO`
-- [ ] Cadastro ignora qualquer tentativa de enviar papel ou `admin` no corpo
-- [ ] Login com senha errada, e-mail inexistente ou usuário inativo devolve o mesmo 401
-- [ ] Rota protegida sem token devolve 401
-- [ ] Token expirado devolve 401
-- [ ] Aluno em rota `/admin/**` recebe 403
-- [ ] O admin inicial é criado uma única vez
+- [x] Cadastro seguido de login devolve token válido, e `GET /me` devolve o usuário
+- [x] Cadastro com e-mail repetido devolve 409 `EMAIL_JA_CADASTRADO`
+- [x] Cadastro ignora qualquer tentativa de enviar papel ou `admin` no corpo
+- [x] Login com senha errada, e-mail inexistente ou usuário inativo devolve o mesmo 401
+- [x] Rota protegida sem token devolve 401
+- [x] Token expirado devolve 401
+- [x] Aluno em rota `/admin/**` recebe 403
+- [x] O admin inicial é criado uma única vez
 
 ---
 
@@ -304,7 +304,7 @@ Registrar aqui tudo o que for decidido na implementação e não estiver no plan
 | Data | Etapa | Decisão | Motivo |
 |---|---|---|---|
 | 2026-10-06 | 0 | MySQL do Docker Compose exposto na porta 3307 do host (configurável por `DB_PORTA`); imagem `mysql:8` (8.4) | Evitar conflito com um MySQL local que já esteja usando a 3306 |
-| 2026-10-06 | 0 | Perfil `dev` é o padrão e tem usuário e senha do banco com valor padrão igual ao do `docker-compose.yml`; fora do `dev` (e para JWT e admin em qualquer perfil) as variáveis de ambiente são obrigatórias | Subir o ambiente local sem configurar nada, sem colocar segredos reais no código |
+| 2026-10-06 | 0 | Perfil `dev` é o padrão e tem usuário e senha do banco com valor padrão igual ao do `docker-compose.yml`; fora do `dev` as variáveis de ambiente são obrigatórias | Subir o ambiente local sem configurar nada, sem colocar segredos reais no código. Na Etapa 2 o mesmo passou a valer para JWT e admin (ver abaixo) |
 | 2026-10-06 | 0 | `app.relogio.fixo` só é lido no perfil `dev`; nos demais perfis o relógio é sempre o real | Evitar que um relógio congelado vá para outro ambiente por engano |
 | 2026-10-06 | 0 | Segurança provisória com todas as rotas liberadas, sem sessão e sem CSRF | As regras por prefixo e o JWT são da Etapa 2; sem isso a rota inexistente devolveria 401 em vez de 404 |
 | 2026-10-06 | 0 | Códigos de erro extras: `ERRO_INTERNO` (500, sem expor detalhes) e `REQUISICAO_INVALIDA` (outros 4xx do Spring, ex.: 405 e 415). JSON mal formado e parâmetro de tipo errado devolvem 400 `VALIDACAO` | A tabela da seção 2.3 não cobre esses casos, e todos os erros precisam sair no formato padrão |
@@ -314,3 +314,14 @@ Registrar aqui tudo o que for decidido na implementação e não estiver no plan
 | 2026-10-07 | 1 | `atualizado_em` sem valor padrão no banco; quem preenche é o service, com o `Clock` injetado | Seguir a convenção 2 da seção 2.3 (nada de `now()` fora do relógio) |
 | 2026-10-07 | 1 | Coluna `role` mapeada no campo `papel` (enum `Papel`) da entidade `Usuario` | Nome da coluna vem do MER; nome do enum vem do plano |
 | 2026-10-07 | 1 | Restrições com nome explícito (`uk_*`, `fk_*`), tabelas InnoDB em `utf8mb4` | Mensagens de erro identificáveis nos testes e suporte a acentos |
+| 2026-10-07 | 2 | No perfil `dev`, `JWT_SEGREDO` e `ADMIN_*` têm valores padrão (admin `admin@boragora.local` / `admin123`). Fora do `dev`, `JWT_SEGREDO` é obrigatório (mínimo 32 bytes) e `ADMIN_*` só é exigido enquanto não existir nenhum admin | Rodar `bootRun` sem configurar variáveis; a aplicação não sobe sem um jeito de existir o primeiro admin |
+| 2026-10-07 | 2 | Rotas fora dos prefixos públicos exigem token; rota inexistente sem token devolve 401 e com token devolve 404 | Proteger por padrão qualquer rota nova; o critério de 404 da Etapa 0 passou a ser testado com token |
+| 2026-10-07 | 2 | `POST /auth/cadastro` devolve 201; `POST /auth/login` devolve 200 | Cadastro cria um recurso |
+| 2026-10-07 | 2 | E-mail normalizado com `trim` e minúsculas já na leitura do corpo, antes da validação de formato | Espaço digitado nas pontas (comum no teclado do celular) não deve invalidar o e-mail |
+| 2026-10-07 | 2 | Senha de 6 a 72 caracteres | 72 bytes é o limite do BCrypt |
+| 2026-10-07 | 2 | Login com e-mail inexistente compara a senha com um hash fictício | Mesmo tempo de resposta nos três casos de 401, para não revelar quais e-mails existem |
+| 2026-10-07 | 2 | Token com `sub` = id do usuário e `iss` = `boragora-api`; validade conferida com o mesmo `Clock` da aplicação | Com `app.relogio.fixo` no `dev`, o token emitido no horário congelado continua válido |
+| 2026-10-07 | 2 | Token de usuário apagado ou inativo devolve 401 `NAO_AUTENTICADO` | Usuário é recarregado a cada requisição; inativo perde o acesso na hora |
+| 2026-10-07 | 2 | `ROLE_ADMIN` só é dado quando o papel é `MOTORISTA` e `admin = true` | O plano define o admin como motorista com `admin = true` |
+| 2026-10-07 | 2 | `ControleDeAcesso` já tem as regras RN10, RN11 e RN12 (`podeVerGrupo`, `podeVerTurma`, `exigirAcesso...`) com testes; nega com 403 `ACESSO_NEGADO`. O item da Etapa 7 fica para ser marcado quando as listagens usarem o componente | As etapas 3 e 4 já precisam da visibilidade em `GET /grupos` e `GET /turmas/{id}` |
+| 2026-10-07 | 2 | Swagger com botão "Authorize" (token Bearer) | Testar as rotas protegidas pelo Swagger |

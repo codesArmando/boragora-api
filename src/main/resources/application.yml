@@ -24,12 +24,14 @@ springdoc:
 
 app:
   jwt:
+    # Chave do HS256, com pelo menos 32 bytes. Obrigatória fora do perfil dev.
     segredo: ${JWT_SEGREDO}
     validade-horas: 24
   admin:
-    nome: ${ADMIN_NOME}
-    email: ${ADMIN_EMAIL}
-    senha: ${ADMIN_SENHA}
+    # Motorista-chefe criado na subida se ainda não existir nenhum admin.
+    nome: ${ADMIN_NOME:}
+    email: ${ADMIN_EMAIL:}
+    senha: ${ADMIN_SENHA:}
 
 ---
 spring:
@@ -42,6 +44,13 @@ spring:
     password: ${DB_SENHA:boragora}
 
 app:
+  # Valores padrão apenas para desenvolvimento local. Nunca usar fora do perfil dev.
+  jwt:
+    segredo: ${JWT_SEGREDO:segredo-de-desenvolvimento-local-nao-usar-em-producao}
+  admin:
+    nome: ${ADMIN_NOME:Motorista-chefe}
+    email: ${ADMIN_EMAIL:admin@boragora.local}
+    senha: ${ADMIN_SENHA:admin123}
   relogio:
     # Opcional. Ex.: 2026-10-05T18:30 congela o relógio nesse instante (fuso America/Sao_Paulo).
     fixo: ${APP_RELOGIO_FIXO:}

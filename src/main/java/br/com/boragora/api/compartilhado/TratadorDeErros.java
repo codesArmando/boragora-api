@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -48,6 +50,19 @@ public class TratadorDeErros {
     public ResponseEntity<ErroResposta> naoEncontrado(Exception e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ErroResposta.de("NAO_ENCONTRADO", "Recurso não encontrado."));
+    }
+
+    /** Negações vindas de dentro dos controllers e services (os filtros de segurança têm resposta própria). */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErroResposta> acessoNegado(AccessDeniedException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ErroResposta.de("ACESSO_NEGADO", "Você não tem permissão para acessar este recurso."));
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErroResposta> naoAutenticado(AuthenticationException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErroResposta.de("NAO_AUTENTICADO", "Sessão ausente, inválida ou expirada. Faça login novamente."));
     }
 
     @ExceptionHandler(Exception.class)

@@ -1,5 +1,7 @@
 package br.com.boragora.api.usuario;
 
+import java.util.Locale;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -47,6 +49,11 @@ public class Usuario {
         this.email = email;
         this.senhaHash = senhaHash;
         this.papel = papel;
+    }
+
+    /** E-mails são gravados e comparados sem espaços nas pontas e em minúsculas. */
+    public static String normalizarEmail(String email) {
+        return email == null ? null : email.trim().toLowerCase(Locale.ROOT);
     }
 
     public Long getId() {

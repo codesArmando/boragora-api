@@ -1,11 +1,13 @@
 # Plano de Implementação do Backend
 ## Boragora Viagens — App de Controle de Passageiros de Van
 
-**Base:** documento de escopo v7, MER (`mer_ajustado_app_van_dark.html`) e projeto de telas "Boragora Viagens" (telas A1 a E1).
+**Base:** documento de escopo v7, MER (`mer_ajustado_app_van_dark.html`) e projeto de telas "Boragora Viagens" (telas A1 a E1, revisadas em 2026-10-13 com as telas C0b, C6, D2b, D5a, D8, D9 e D10).
 
 **Para que serve:** guiar a construção da API etapa por etapa (inclusive pelo Claude Code) e permitir que a equipe valide o que será construído antes e depois de cada etapa.
 
-**Versão:** 3 — turma com nome em texto livre (ver changelogs no final).
+**Versão:** 4 — ajustes da revisão das telas: lista cadastral de turmas, listagem geral de alunos, campo `data` no push e navegação do motorista-chefe (ver changelogs no final).
+
+**Documentos do app:** `plano-implementacao-frontend.md` e `checklist-frontend.md`.
 
 **Acompanhamento:** o progresso é registrado em `checklist-backend.md`.
 
@@ -15,7 +17,7 @@
 
 ## 1. Decisões confirmadas pela equipe
 
-Ao cruzar escopo, MER e telas, surgiram dez pontos que dependiam de decisão. Todos foram respondidos pela equipe e estão incorporados nas etapas indicadas.
+Ao cruzar escopo, MER e telas, surgiram dez pontos que dependiam de decisão (1 a 10). A revisão das telas feita junto com o plano do frontend, em 2026-10-13, acrescentou os pontos 11 a 14. Todos foram respondidos pela equipe e estão incorporados nas etapas indicadas.
 
 | # | Ponto | Decisão | Efeito no backend | Etapa |
 |---|---|---|---|---|
@@ -29,13 +31,17 @@ Ao cruzar escopo, MER e telas, surgiram dez pontos que dependiam de decisão. To
 | 8 | Identificação da turma | Nome em texto livre, definido pelo motorista-chefe. | Nova coluna `nome` em `TURMA` (alteração no MER). Sem validação de unicidade. | 1 e 4 |
 | 9 | API externa (RNF04) | Serviço de push do Expo. Geolocalização fica fora (seção 7). | Integração HTTP com o Expo. | 8 |
 | 10 | Duração da sessão | Token JWT com validade de 1 dia, sem refresh token. | Token expirado devolve 401 e o app volta para a tela de login. | 2 |
+| 11 | Listagem geral de alunos (tela D10, revisão de 2026-10-13) | O atalho "Alunos" da gestão abre uma listagem somente leitura de todos os alunos cadastrados, indicando se cada um está ou não vinculado a uma turma. O vínculo continua sendo feito só dentro da turma (D5 → D6). | `GET /admin/alunos` passa a aceitar a chamada sem `turmaId`. | 5 |
+| 12 | Toque na notificação (revisão de 2026-10-13) | O lembrete abre o plano de hoje da turma do aluno (B1). O cancelamento tardio abre a lista da ida da turma do aluno que cancelou (C1). | O envio do push leva o campo `data` com `tipo` e `turmaId`. | 8 |
+| 13 | Navegação do motorista-chefe (revisão de 2026-10-13) | O chefe tem as mesmas abas e telas do motorista (Hoje, Grupo e Conta), mais a aba Gestão. A aba "Turmas" deixa de existir; o chefe acompanha o dia de qualquer turma pela aba Grupo. | Nenhuma rota nova: o chefe usa `/motorista/**`, `/grupos/**` e `/turmas/**`, que já o atendem (RN12). `GET /admin/turmas/hoje` sai do plano, porque nenhuma tela o usa. | 7 |
+| 14 | Tela de turmas da gestão (D3, revisão de 2026-10-13) | Lista cadastral das turmas (grupo, nome, motorista e número de alunos), sem os contadores do dia. | Nova rota `GET /admin/turmas`. | 4 |
 
 **Definições que decorrem dessas respostas:**
 
 - **Nome da turma (ponto 8).** A tabela `TURMA` ganha a coluna `nome` (texto livre, obrigatório, até 60 caracteres, ex.: "Van 2" ou "Van da Zona Sul"). É o nome que identifica a turma em todas as telas e notificações, no lugar de "Van N". Nomes podem se repetir. As colunas `numero_van` e `capacidade` permanecem como dados cadastrais da van, sem uso em regras. O MER foi atualizado com a nova coluna.
 - **Regras de exclusão (ponto 6), ainda a conferir pela equipe.** O MER não tem campo `ativo` em `GRUPO` nem em `TURMA`, então a exclusão é física. Um grupo só pode ser excluído se não tiver turmas. Excluir uma turma apaga junto os vínculos de alunos, as viagens e as confirmações dela, o que é coerente com o histórico estar fora de escopo. A alternativa seria bloquear a exclusão de turmas que já tiveram viagem, mas isso tornaria quase toda turma impossível de excluir.
 
-**Alinhamento com o escopo:** as decisões desta seção já estão incorporadas ao documento de escopo v7 (RN15 a RN18, RF01, RF02, RF03, RF10, RF13, RF14, RNF03 e RNF04). Se ainda assim houver divergência entre os dois documentos, parar e perguntar.
+**Alinhamento com o escopo:** as decisões 1 a 10 já estão incorporadas ao documento de escopo v7 (RN15 a RN18, RF01, RF02, RF03, RF10, RF13, RF14, RNF03 e RNF04). As decisões 11 a 14 tratam só de telas e rotas e não mudam requisitos nem regras do escopo; o RF04 (status de qualquer turma) continua atendido pela aba Grupo do chefe, com `GET /grupos/{id}/hoje`. Se ainda assim houver divergência entre os documentos, parar e perguntar.
 
 ---
 
@@ -56,6 +62,8 @@ Ao cruzar escopo, MER e telas, surgiram dez pontos que dependiam de decisão. To
 | Testes | JUnit 5, Mockito, MockMvc e Testcontainers (MySQL) |
 
 ### 2.2 Estrutura de pacotes
+
+O backend tem um repositório Git próprio, `boragora-api`, separado do repositório do app (`boragora-mobile`). Localmente os dois ficam lado a lado em uma pasta `Boragora/`, que não é versionada. Os documentos do backend (escopo, MER, este plano e o checklist) ficam em `boragora-api/docs/`; o app os lê de lá.
 
 Pacote base sugerido: `br.com.boragora.api`. Organização por funcionalidade, cada pacote com seu controller, service, repository, entidade e DTOs.
 
@@ -126,11 +134,11 @@ A ordem segue as dependências: cada etapa só usa o que as anteriores entregara
 | 0 | Projeto, banco local, relógio, erros padronizados | — | — |
 | 1 | Esquema do banco e entidades | 0 | — |
 | 2 | Cadastro, login, JWT, papéis | 1 | A1, A2, B9 |
-| 3 | Grupos (CRUD) | 2 | D1, D2 |
-| 4 | Motoristas e turmas (CRUD) | 3 | D4, D5, D7 |
-| 5 | Vínculo e remoção de alunos | 4 | D5, D6 |
+| 3 | Grupos (CRUD) | 2 | D2, D2b, D8 |
+| 4 | Motoristas e turmas (CRUD) | 3 | D3, D4, D5, D5a, D7, D9 |
+| 5 | Vínculo e remoção de alunos | 4 | D5, D6, D10 |
 | 6 | Plano do dia do aluno | 5 | A3, tela inicial do aluno, B1 a B7 |
-| 7 | Listagens do dia e visibilidade | 6 | B8, B8a, B8b, C0 a C5, D3 |
+| 7 | Listagens do dia e visibilidade | 6 | B8, B8a, B8b, C0 a C5, C0b, C6 |
 | 8 | Notificações push | 6 | E1 |
 | 9 | Dados de demonstração e fechamento | todas | — |
 
@@ -229,10 +237,10 @@ Ao fim da etapa 5 o motorista-chefe já consegue montar toda a operação. A eta
 | Método e rota | Uso | Observação |
 |---|---|---|
 | `POST /admin/grupos` | Tela D2 | `nome`, `periodo`, `horarioSaidaIda`, `horarioSaidaVolta` |
-| `PUT /admin/grupos/{id}` | Tela D2 em modo edição | Mesmos campos |
-| `DELETE /admin/grupos/{id}` | Excluir grupo | Só se o grupo não tiver turmas |
-| `GET /grupos` | Telas D1, B8a e C3a | Devolve os grupos visíveis para quem chama (seção 2.4) |
-| `GET /grupos/{id}` | Carregar o formulário de edição | Respeita a visibilidade da seção 2.4 |
+| `PUT /admin/grupos/{id}` | Tela D2b (editar grupo) | Mesmos campos |
+| `DELETE /admin/grupos/{id}` | Tela D2b, botão "Excluir grupo" | Só se o grupo não tiver turmas |
+| `GET /grupos` | Telas D8, B8a e C3a | Devolve os grupos visíveis para quem chama (seção 2.4); para o chefe, todos |
+| `GET /grupos/{id}` | Carregar o formulário da D2b | Respeita a visibilidade da seção 2.4 |
 
 **Regras:**
 - Todos os campos obrigatórios. `horarioSaidaIda` deve ser anterior a `horarioSaidaVolta` (o sistema não trata turno que atravessa a meia-noite).
@@ -257,11 +265,12 @@ Ao fim da etapa 5 o motorista-chefe já consegue montar toda a operação. A eta
 | Método e rota | Uso | Observação |
 |---|---|---|
 | `POST /admin/motoristas` | Tela D7 | `nome`, `email`, `senha`. Cria usuário com papel `MOTORISTA`, `admin = false` |
-| `GET /admin/motoristas` | Seletor das telas D4 e D5 | Motoristas ativos, incluindo o chefe |
+| `GET /admin/motoristas` | Tela D9 e seletores das telas D4 e D5 | Motoristas ativos, incluindo o chefe |
+| `GET /admin/turmas` | Tela D3 | Todas as turmas, para a lista cadastral da gestão |
 | `POST /admin/turmas` | Tela D4 | `grupoId`, `nome`, `numeroVan`, `capacidade`, `motoristaId` |
-| `PUT /admin/turmas/{id}` | Tela D5: dados cadastrais e botão "Trocar" | `nome`, `numeroVan`, `capacidade`, `motoristaId` |
-| `DELETE /admin/turmas/{id}` | Excluir turma | Apaga a turma e tudo o que depende dela |
-| `GET /turmas/{id}` | Telas C4 e D5 | Dados da turma, grupo, motorista e alunos com vínculo ativo, em ordem alfabética |
+| `PUT /admin/turmas/{id}` | Telas D5 (botão "Trocar") e D5a (nome, número da van e capacidade) | `nome`, `numeroVan`, `capacidade`, `motoristaId` |
+| `DELETE /admin/turmas/{id}` | Tela D5a, botão "Excluir turma" | Apaga a turma e tudo o que depende dela |
+| `GET /turmas/{id}` | Telas C4, D5 e D5a | Dados da turma, grupo, motorista e alunos com vínculo ativo, em ordem alfabética |
 
 **Regras:**
 - **RN08 para motoristas:** um motorista não pode conduzir duas turmas do mesmo grupo. A validação fica em um componente único, `ValidadorConflitoDeGrupo`, usado na criação da turma e na troca de motorista. A restrição única (`id_grupo`, `id_motorista`) é a segunda barreira. Violação devolve 409 `CONFLITO_GRUPO_MOTORISTA`.
@@ -272,6 +281,7 @@ Ao fim da etapa 5 o motorista-chefe já consegue montar toda a operação. A eta
 - **Exclusão:** apagar a turma apaga também seus vínculos de alunos, viagens e confirmações (cascata definida na etapa 1). A confirmação antes de excluir é responsabilidade do app. Contas de motorista e de aluno não são afetadas.
 - O grupo de uma turma não muda depois de criada.
 - `GET /turmas/{id}` respeita a visibilidade da seção 2.4.
+- **`GET /admin/turmas` (tela D3):** cada item traz `id`, `nome`, `numeroVan`, `capacidade`, `grupo` (`id`, `nome`, `periodo` e horários), `motorista` (`id` e `nome`) e `totalAlunos` (vínculos ativos). Ordem: grupos na mesma ordem de `GET /grupos`, depois nome da turma. Grupo sem turma não aparece. Não traz nenhum dado do dia; o acompanhamento do dia é feito pelas rotas da etapa 7.
 
 **Pronto quando:**
 - O admin cadastra motorista, cria turma, altera os dados cadastrais e troca o motorista.
@@ -281,6 +291,7 @@ Ao fim da etapa 5 o motorista-chefe já consegue montar toda a operação. A eta
 - Alterar o nome pela edição reflete em `GET /turmas/{id}`.
 - Colocar o mesmo motorista em duas turmas do mesmo grupo devolve 409, tanto na criação quanto na troca.
 - O mesmo motorista em turmas de grupos diferentes é aceito (caso do Vanderlei nas telas: Manhã e Noite).
+- `GET /admin/turmas` devolve todas as turmas para o admin, com `totalAlunos` contando só vínculos ativos; não-admin recebe 403.
 
 ---
 
@@ -292,7 +303,7 @@ Ao fim da etapa 5 o motorista-chefe já consegue montar toda a operação. A eta
 
 | Método e rota | Uso | Observação |
 |---|---|---|
-| `GET /admin/alunos?busca=&turmaId=` | Tela D6 | Alunos ativos, filtrados por nome ou e-mail, com a situação de cada um em relação à turma informada |
+| `GET /admin/alunos?busca=&turmaId=` | Telas D6 (com `turmaId`) e D10 (sem `turmaId`) | Alunos ativos, filtrados por nome ou e-mail. Com `turmaId`, traz a situação de cada um em relação à turma; sem `turmaId`, é a listagem geral |
 | `POST /admin/turmas/{id}/alunos` | Tela D6, "Vincular N alunos" | `alunoIds` (lista). Tudo ou nada, em uma transação |
 | `DELETE /admin/turmas/{id}/alunos/{alunoId}` | Tela D5, botão de remover | Desativa o vínculo |
 
@@ -304,12 +315,14 @@ Ao fim da etapa 5 o motorista-chefe já consegue montar toda a operação. A eta
   - `DISPONIVEL`: pode ser vinculado (tela mostra "Sem turma" ou a turma de outro grupo);
   - `CONFLITO_NO_GRUPO`: já está em outra turma do mesmo grupo (tela mostra "Já está na Van 1 deste grupo", com a caixa desabilitada). Traz o nome da turma em conflito;
   - alunos já vinculados à própria turma não são listados.
+- **Sem `turmaId` (tela D10, decisão 11):** devolve todos os alunos ativos, filtrados por `busca` quando informada, em ordem alfabética, no mesmo formato de item, com `turmas` vazia para quem não tem vínculo ativo e `situacao` nula. É somente consulta: o app mostra "Vinculado" ou "Sem turma".
 
 **Pronto quando:**
 - Vincular dois alunos de uma vez funciona e eles aparecem em `GET /turmas/{id}`.
 - Vincular um aluno que já está em outra turma do mesmo grupo devolve 409 e ninguém do lote é vinculado.
 - Um aluno pode estar em turmas de grupos diferentes (caso do João nas telas: Manhã · Van 1 e Noite · Van 2).
 - Remover e vincular de novo reutiliza o mesmo registro.
+- Sem `turmaId`, a lista traz alunos com e sem vínculo, com `turmas` vazia para quem não tem vínculo ativo e `situacao` nula.
 
 ---
 
@@ -422,15 +435,16 @@ O bloco `acoes` é calculado no servidor para o app não repetir a lógica de ho
 
 | Método e rota | Uso | Quem acessa |
 |---|---|---|
-| `GET /motorista/turmas` | Tela C0 | Motorista: suas turmas, com os contadores de hoje |
+| `GET /motorista/turmas` | Telas C0, C0b e C6 | Motorista (inclusive o chefe): suas turmas, com os contadores de hoje |
 | `GET /turmas/{id}/hoje` | Telas C1, C2 e C5 | Conforme a seção 2.4 |
 | `GET /grupos/{id}/hoje` | Telas B8, B8b e C3 | Conforme a seção 2.4 |
-| `GET /admin/turmas/hoje` | Tela D3 | Admin: todas as turmas, agrupadas por grupo, com contadores |
+
+**Motorista-chefe (decisão 13):** usa as mesmas rotas do motorista. `GET /motorista/turmas` devolve as turmas que ele conduz, ou lista vazia se não conduz nenhuma (tela C0b). `GET /grupos` e `GET /grupos/{id}/hoje` já lhe devolvem todos os grupos (RN12), e é por eles que ele acompanha o dia de qualquer turma. Por isso não existe rota de listagem do dia exclusiva do admin.
 
 **Formato comum de "turma hoje":**
 - Dados da turma: `id`, `nome`, nome do motorista, grupo e horários.
 - `contadores`: `vaoNaIda`, `voltam`, `liberados`, `canceladosAposSaida`.
-- `semConfirmacoes`: verdadeiro quando não há viagem hoje ou ninguém está marcado (tela C5 e "Sem confirmações hoje" na D3).
+- `semConfirmacoes`: verdadeiro quando não há viagem hoje ou ninguém está marcado (tela C5 e "Hoje: ninguém confirmou ainda" na C0).
 - `listaIda`: itens com `alunoId`, `nome` e `situacao` (`CONFIRMADO` ou `CANCELADO_APOS_SAIDA`).
 - `listaVolta`: itens com `alunoId`, `nome` e `statusVolta`.
 
@@ -451,6 +465,7 @@ Em `GET /grupos/{id}/hoje`, cada turma traz também `minhaTurma` (verdadeiro ou 
 - Aluno consulta o próprio grupo e recebe 403 ao consultar um grupo em que não tem vínculo.
 - Motorista consulta turmas do grupo em que atua e recebe 403 fora dele.
 - Admin consulta qualquer turma e qualquer grupo.
+- Motorista-chefe que não conduz turma recebe lista vazia em `GET /motorista/turmas`.
 
 ---
 
@@ -466,7 +481,8 @@ Em `GET /grupos/{id}/hoje`, cada turma traz também `minhaTurma` (verdadeiro ou 
 | `DELETE /me/push-token` | O app remove o token ao sair da conta |
 
 **Construir:**
-- Interface `PushGateway` com o método de envio (token, título, corpo). A implementação real faz `POST https://exp.host/--/api/v2/push/send`. Nos testes, usa-se uma implementação falsa que registra o que foi enviado.
+- Interface `PushGateway` com o método de envio (token, título, corpo e `data`). A implementação real faz `POST https://exp.host/--/api/v2/push/send`, repassando `data` no campo de mesmo nome. Nos testes, usa-se uma implementação falsa que registra o que foi enviado.
+- **Campo `data` (decisão 12):** é o que o app usa para abrir a tela certa ao tocar na notificação. Cancelamento tardio: `{ "tipo": "CANCELAMENTO_TARDIO", "turmaId": <turma do aluno> }`. Lembrete: `{ "tipo": "LEMBRETE", "turmaId": <turma do aluno no grupo> }`; pela RN08 o aluno tem no máximo uma turma por grupo, então a turma é sempre única.
 - Falha no envio é registrada em log e nunca derruba a operação que a originou. Se o Expo responder `DeviceNotRegistered`, o token do usuário é apagado.
 - **Push de cancelamento tardio:** um listener do evento `IdaCanceladaAposSaida`, executado só depois do commit da transação (`@TransactionalEventListener` com fase `AFTER_COMMIT`), envia somente ao motorista responsável da turma (ponto 3 da seção 1), mesmo que ele não seja o motorista-chefe:
   - Título: "João Gabriel cancelou a ida para a faculdade!"
@@ -484,6 +500,7 @@ Em `GET /grupos/{id}/hoje`, cada turma traz também `minhaTurma` (verdadeiro ou 
 - Se o gateway lançar erro, o cancelamento continua gravado.
 - Com relógio fixo em 16:10 e grupo com ida às 18:10 (2 horas antes), o lembrete vai só para quem não marcou nada; quem já marcou ida ou volta não recebe.
 - Fora dos dias configurados, nada é enviado.
+- O gateway falso registra o `data` correto nos dois tipos de push (`tipo` e `turmaId`).
 
 ---
 
@@ -492,7 +509,7 @@ Em `GET /grupos/{id}/hoje`, cada turma traz também `minhaTurma` (verdadeiro ou 
 **Objetivo:** deixar o backend pronto para o time do app consumir e para a apresentação.
 
 **Construir:**
-- **Carga de dados no perfil `dev`** reproduzindo o cenário das telas: grupos Manhã (06:20 / 12:10) e Noite (18:10 / 22:30); motoristas Carlos Menezes e Vanderlei Dias; turmas com os nomes "Van 1" e "Van 2" em cada grupo; alunos das telas (João Gabriel, Mariana Alves, Lucas Pereira e os demais) com seus vínculos. Assim o app exibe o mesmo que o design.
+- **Carga de dados no perfil `dev`** reproduzindo o cenário das telas: grupos Manhã (06:20 / 12:10) e Noite (18:10 / 22:30); motoristas Carlos Menezes e Vanderlei Dias; turmas com os nomes "Van 1" e "Van 2" em cada grupo; alunos das telas (João Gabriel, Mariana Alves, Lucas Pereira e os demais) com seus vínculos; e alunos sem vínculo (Ana Beatriz Moura, Diego Farias e Vitor Sampaio), para as telas D6 e D10. Assim o app exibe o mesmo que o design.
 - **Teste de integração de ponta a ponta** com MockMvc e Testcontainers: admin cria grupo, motorista e turma; aluno se cadastra; admin vincula; aluno declara o plano; motorista vê a lista; aluno cancela depois da saída; a lista mostra o cancelado.
 - **Revisão da RNF08:** conferir que cada regra das etapas 4 a 6 tem um teste que chama a API diretamente, sem depender do app.
 - **README** com: como subir o banco e a API, variáveis de ambiente, endereço do Swagger, usuários da carga de demonstração e como usar `app.relogio.fixo`.
@@ -516,28 +533,36 @@ Em `GET /grupos/{id}/hoje`, cada turma traz também `minhaTurma` (verdadeiro ou 
 | B8a Grupos do aluno | `GET /grupos` |
 | B8 e B8b Grupo, ida e volta | `GET /grupos/{id}/hoje` |
 | B9 Conta | `GET /me`, `GET /aluno/turmas`, `DELETE /me/push-token` ao sair |
-| C0 Turmas do motorista | `GET /motorista/turmas` |
+| C0 Turmas do motorista (e do chefe que conduz turma) | `GET /motorista/turmas` |
+| C0b Hoje do chefe sem turma | `GET /motorista/turmas` (lista vazia) |
 | C1, C2 e C5 Listas do dia | `GET /turmas/{id}/hoje` |
-| C3a Grupos do motorista | `GET /grupos` |
+| C3a Grupos do motorista e do chefe | `GET /grupos` |
 | C3 Demais turmas do grupo | `GET /grupos/{id}/hoje` |
 | C4 Alunos da turma | `GET /turmas/{id}` |
-| D1 Gestão | `GET /grupos` |
-| D2 Novo grupo e edição | `POST /admin/grupos`, `GET /grupos/{id}`, `PUT /admin/grupos/{id}`, `DELETE /admin/grupos/{id}` |
-| D3 Todas as turmas | `GET /admin/turmas/hoje` |
+| C6 Conta do motorista e do chefe | `GET /me`, `GET /motorista/turmas`, `DELETE /me/push-token` ao sair |
+| D1 Gestão | Nenhum (só os quatro atalhos) |
+| D8 Grupos | `GET /grupos` |
+| D2 Novo grupo | `POST /admin/grupos` |
+| D2b Editar grupo | `GET /grupos/{id}`, `PUT /admin/grupos/{id}`, `DELETE /admin/grupos/{id}` |
+| D3 Turmas | `GET /admin/turmas` |
 | D4 Nova turma | `GET /grupos`, `GET /admin/motoristas`, `POST /admin/turmas` |
-| D5 Gerenciar turma | `GET /turmas/{id}`, `PUT /admin/turmas/{id}`, `DELETE /admin/turmas/{id}`, `DELETE /admin/turmas/{id}/alunos/{alunoId}` |
-| D6 Vincular alunos | `GET /admin/alunos`, `POST /admin/turmas/{id}/alunos` |
+| D5 Gerenciar turma | `GET /turmas/{id}`, `GET /admin/motoristas` e `PUT /admin/turmas/{id}` (trocar motorista), `DELETE /admin/turmas/{id}/alunos/{alunoId}` |
+| D5a Editar turma | `GET /turmas/{id}`, `PUT /admin/turmas/{id}`, `DELETE /admin/turmas/{id}` |
+| D6 Vincular alunos | `GET /admin/alunos?turmaId=`, `POST /admin/turmas/{id}/alunos` |
+| D9 Motoristas | `GET /admin/motoristas` |
 | D7 Novo motorista | `POST /admin/motoristas` |
-| E1 Notificações | `PUT /me/push-token` e os envios da etapa 8 |
+| D10 Alunos | `GET /admin/alunos` sem `turmaId` |
+| E1 Notificações | `PUT /me/push-token` e os envios da etapa 8, com o campo `data` |
 
-A aba "Conta" do motorista não tem tela desenhada. `GET /me` e `GET /motorista/turmas` cobrem o que ela precisaria exibir.
+O motorista-chefe tem as mesmas abas do motorista (Hoje, Grupo e Conta) mais a aba Gestão (D1), e usa as mesmas rotas do motorista nessas três abas.
 
-**Ajustes que as decisões da seção 1 pedem nas telas (trabalho do app, não do backend):**
+**Ajustes que as decisões da seção 1 pedem nas telas (trabalho do app, não do backend).** Todos já foram aplicados no protótipo em 2026-10-13; a implementação no app é acompanhada em `checklist-frontend.md`.
 
 - B5 e B6: retirar o botão "Abrir WhatsApp" e manter só o aviso (ponto 1).
-- D2 (modo edição) e D5: incluir a ação de excluir grupo e de excluir turma, com confirmação (ponto 6). D5 também precisa permitir editar nome, número da van e capacidade.
-- D4 e D5: incluir o campo "Nome da turma" (ponto 8). Nas demais telas, onde hoje aparece "Van N", passa a aparecer o nome da turma.
-- D2: tratar o erro `GRUPO_COM_TURMAS` com uma mensagem orientando a excluir as turmas antes.
+- D2b e D5a: incluir a ação de excluir grupo e de excluir turma, com confirmação (ponto 6). A D5a também permite editar nome, número da van e capacidade.
+- D4 e D5a: incluir o campo "Nome da turma" (ponto 8). Nas demais telas, onde aparece "Van N", aparece o nome da turma.
+- D2b: tratar o erro `GRUPO_COM_TURMAS` com uma mensagem orientando a excluir as turmas antes.
+- D1 com quatro atalhos (Grupos, Turmas, Motoristas e Alunos); telas novas D8, D9 e D10; D3 como lista cadastral; abas do chefe iguais às do motorista mais Gestão; Conta do motorista (C6) e Hoje do chefe sem turma (C0b) (pontos 11, 13 e 14).
 
 ---
 
@@ -589,6 +614,21 @@ A aba "Conta" do motorista não tem tela desenhada. `GET /me` e `GET /motorista/
 7. Ao concluir cada item, marcar a caixa correspondente em `checklist-backend.md` e, ao fechar a etapa, atualizar a tabela de progresso do mesmo arquivo. Só marcar um critério de aceite quando houver um teste automatizado que o comprove; os itens indicados como verificação manual ficam para a equipe marcar.
 
 ---
+
+## Changelog — o que mudou da versão 3 para a versão 4
+
+| # | Mudança | Motivo |
+|---|---|---|
+| 1 | Novos pontos 11 a 14 na seção 1 | Revisão das telas feita junto com o plano do frontend (2026-10-13). |
+| 2 | Etapa 4: nova rota `GET /admin/turmas`, com formato e critério de aceite | A tela D3 passou a ser uma lista cadastral (ponto 14). |
+| 3 | Etapa 5: `turmaId` opcional em `GET /admin/alunos`; sem ele, listagem geral | Nova tela D10 (ponto 11). |
+| 4 | Etapa 7: `GET /admin/turmas/hoje` removido; esclarecido que o chefe usa as rotas do motorista; novo critério para o chefe sem turma | Navegação do chefe (ponto 13). Nenhuma tela usava mais a rota. |
+| 5 | Etapa 8: campo `data` no `PushGateway` e no envio, com critério de aceite | Destino do toque na notificação (ponto 12). |
+| 6 | Etapa 9: carga de dados com alunos sem vínculo | Telas D6 e D10. |
+| 7 | Seção 2.2: repositório `boragora-api` separado do app, com os documentos em `boragora-api/docs/` | Organização dos repositórios definida pela equipe. |
+| 8 | Seção 3 e seção 5 (mapa de telas) atualizadas com as telas C0b, C6, D2b, D5a, D8, D9 e D10 | Protótipo revisado. |
+
+As etapas 0 a 3, já concluídas, não mudam: as telas novas da etapa 3 (D8 e D2b) usam as mesmas rotas de grupos.
 
 ## Changelog — o que mudou da versão 2 para a versão 3
 

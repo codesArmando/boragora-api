@@ -204,11 +204,11 @@ class AutenticacaoApiTest {
 
     @Test
     void adminPassaPelasRegrasDeAdminEDeMotorista() throws Exception {
-        // As rotas ainda não existem: 404 mostra que a segurança deixou passar.
+        // Caminhos sem rota: 404 (e não 403) mostra que a segurança deixou passar.
         String bearer = dados.bearer(dados.admin());
-        mvc.perform(get("/admin/grupos").header(HttpHeaders.AUTHORIZATION, bearer))
+        mvc.perform(get("/admin/caminho-sem-rota").header(HttpHeaders.AUTHORIZATION, bearer))
                 .andExpect(status().isNotFound());
-        mvc.perform(get("/motorista/turmas").header(HttpHeaders.AUTHORIZATION, bearer))
+        mvc.perform(get("/motorista/caminho-sem-rota").header(HttpHeaders.AUTHORIZATION, bearer))
                 .andExpect(status().isNotFound());
     }
 

@@ -1,10 +1,14 @@
 package br.com.boragora.api.seguranca;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.com.boragora.api.compartilhado.RegraDeNegocioException;
+import br.com.boragora.api.grupo.Grupo;
+import br.com.boragora.api.grupo.GrupoRepository;
 import br.com.boragora.api.turma.TurmaAlunoRepository;
 import br.com.boragora.api.turma.TurmaRepository;
 import br.com.boragora.api.usuario.Papel;
@@ -22,12 +26,25 @@ import br.com.boragora.api.usuario.Papel;
 @Transactional(readOnly = true)
 public class ControleDeAcesso {
 
+    private final GrupoRepository grupos;
     private final TurmaRepository turmas;
     private final TurmaAlunoRepository vinculos;
 
-    public ControleDeAcesso(TurmaRepository turmas, TurmaAlunoRepository vinculos) {
+    public ControleDeAcesso(GrupoRepository grupos, TurmaRepository turmas, TurmaAlunoRepository vinculos) {
+        this.grupos = grupos;
         this.turmas = turmas;
         this.vinculos = vinculos;
+    }
+
+    /** Os grupos que o usuário pode ver, pelas mesmas regras de {@link #podeVerGrupo}. */
+    public List<Grupo> gruposVisiveis(UsuarioAutenticado usuario) {
+        if (usuario.ehAdmin()) {
+            return grupos.findAll();
+        }
+        if (usuario.papel() == Papel.MOTORISTA) {
+            return turmas.findGruposDoMotorista(usuario.id());
+        }
+        return vinculos.findGruposDoAluno(usuario.id());
     }
 
     public boolean podeVerGrupo(UsuarioAutenticado usuario, Long grupoId) {

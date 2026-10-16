@@ -27,7 +27,8 @@ public class TratadorDeErros {
 
     @ExceptionHandler(RegraDeNegocioException.class)
     public ResponseEntity<ErroResposta> regraDeNegocio(RegraDeNegocioException e) {
-        return ResponseEntity.status(e.getStatus()).body(ErroResposta.de(e.getCodigo(), e.getMessage()));
+        return ResponseEntity.status(e.getStatus())
+                .body(new ErroResposta(e.getCodigo(), e.getMessage(), e.getCampos()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

@@ -1,7 +1,7 @@
 # Checklist de Acompanhamento do Backend
 ## Boragora Viagens — App de Controle de Passageiros de Van
 
-**Referência:** `plano-implementacao-backend.md` (versão 3). Cada item abaixo corresponde a algo descrito na etapa de mesmo número do plano.
+**Referência:** `plano-implementacao-backend.md` (versão 4). Cada item abaixo corresponde a algo descrito na etapa de mesmo número do plano.
 
 **Como usar:**
 - Marcar `[x]` quando o item estiver concluído. As etapas devem ser feitas na ordem.
@@ -19,7 +19,7 @@
 | 0 | Fundação | Concluída | 2026-10-07 |
 | 1 | Banco de dados e entidades | Concluída | 2026-10-07 |
 | 2 | Autenticação e usuários | Concluída | 2026-10-07 |
-| 3 | Grupos (CRUD) | Não iniciada | |
+| 3 | Grupos (CRUD) | Concluída | 2026-10-08 |
 | 4 | Motoristas e turmas (CRUD) | Não iniciada | |
 | 5 | Vínculo e remoção de alunos | Não iniciada | |
 | 6 | Plano do dia do aluno | Não iniciada | |
@@ -104,20 +104,20 @@ Valores de status: Não iniciada, Em andamento, Concluída.
 ## Etapa 3 — Grupos: CRUD
 
 **Construção**
-- [ ] `POST /admin/grupos`
-- [ ] `PUT /admin/grupos/{id}`
-- [ ] `DELETE /admin/grupos/{id}`
-- [ ] `GET /grupos` (filtrado pela visibilidade de quem chama, com `totalTurmas` e `minhaTurma`)
-- [ ] `GET /grupos/{id}`
-- [ ] Validação: campos obrigatórios e `horarioSaidaIda` anterior a `horarioSaidaVolta`
+- [x] `POST /admin/grupos`
+- [x] `PUT /admin/grupos/{id}`
+- [x] `DELETE /admin/grupos/{id}`
+- [x] `GET /grupos` (filtrado pela visibilidade de quem chama, com `totalTurmas` e `minhaTurma`)
+- [x] `GET /grupos/{id}`
+- [x] Validação: campos obrigatórios e `horarioSaidaIda` anterior a `horarioSaidaVolta`
 
 **Critérios de aceite**
-- [ ] Admin cria, consulta, edita e exclui grupo
-- [ ] Não-admin recebe 403 nas rotas `/admin/grupos`
-- [ ] Horário de ida igual ou posterior ao de volta devolve 400
-- [ ] Excluir grupo com turma devolve 409 `GRUPO_COM_TURMAS` *(teste completado na etapa 4, quando turmas existirem)*
-- [ ] Excluir grupo vazio devolve 204 e ele some de `GET /grupos`
-- [ ] `GET /grupos` devolve todos os grupos para o admin e lista vazia para aluno sem vínculo
+- [x] Admin cria, consulta, edita e exclui grupo
+- [x] Não-admin recebe 403 nas rotas `/admin/grupos`
+- [x] Horário de ida igual ou posterior ao de volta devolve 400
+- [x] Excluir grupo com turma devolve 409 `GRUPO_COM_TURMAS` *(teste completado na etapa 4, quando turmas existirem)*
+- [x] Excluir grupo vazio devolve 204 e ele some de `GET /grupos`
+- [x] `GET /grupos` devolve todos os grupos para o admin e lista vazia para aluno sem vínculo
 
 ---
 
@@ -126,6 +126,7 @@ Valores de status: Não iniciada, Em andamento, Concluída.
 **Construção**
 - [ ] `POST /admin/motoristas`
 - [ ] `GET /admin/motoristas`
+- [ ] `GET /admin/turmas` (lista cadastral de todas as turmas, com `totalAlunos`)
 - [ ] `POST /admin/turmas` (com `nome`)
 - [ ] `PUT /admin/turmas/{id}` (nome, número da van, capacidade e motorista)
 - [ ] Validação do `nome` da turma: obrigatório, sem espaços nas pontas, de 1 a 60 caracteres
@@ -145,6 +146,7 @@ Valores de status: Não iniciada, Em andamento, Concluída.
 - [ ] Excluir turma devolve 204 e remove vínculos, viagens e confirmações dela
 - [ ] Depois da exclusão, o motorista e os alunos podem entrar em outra turma do mesmo grupo
 - [ ] `GET /turmas/{id}` respeita a visibilidade (403 para quem não pode ver)
+- [ ] `GET /admin/turmas` devolve todas as turmas para o admin, com `totalAlunos` contando só vínculos ativos, e 403 para não-admin
 
 ---
 
@@ -152,6 +154,7 @@ Valores de status: Não iniciada, Em andamento, Concluída.
 
 **Construção**
 - [ ] `GET /admin/alunos?busca=&turmaId=` com `situacao` (`DISPONIVEL` ou `CONFLITO_NO_GRUPO`) e turmas atuais de cada aluno
+- [ ] `turmaId` opcional em `GET /admin/alunos`: sem ele, listagem geral de alunos ativos (tela D10), sem `situacao`
 - [ ] `POST /admin/turmas/{id}/alunos` (lote, tudo ou nada)
 - [ ] `DELETE /admin/turmas/{id}/alunos/{alunoId}` (desativa o vínculo)
 - [ ] RN08 para alunos no mesmo `ValidadorConflitoDeGrupo`
@@ -166,6 +169,7 @@ Valores de status: Não iniciada, Em andamento, Concluída.
 - [ ] Remover e vincular de novo reutiliza o mesmo registro
 - [ ] Aluno removido deixa de aparecer em `GET /turmas/{id}`
 - [ ] A busca filtra por nome e por e-mail, e não lista quem já está na turma
+- [ ] Sem `turmaId`, a lista traz alunos com e sem vínculo, com `turmas` vazia para quem não tem vínculo ativo e `situacao` nula
 
 ---
 
@@ -210,7 +214,6 @@ Valores de status: Não iniciada, Em andamento, Concluída.
 - [ ] `GET /motorista/turmas` (turmas do motorista com contadores)
 - [ ] `GET /turmas/{id}/hoje` (contadores, `listaIda`, `listaVolta`, `semConfirmacoes`)
 - [ ] `GET /grupos/{id}/hoje` (todas as turmas do grupo, com `minhaTurma` e `voce`)
-- [ ] `GET /admin/turmas/hoje` (todas as turmas agrupadas por grupo)
 - [ ] Regras de visibilidade RN10, RN11 e RN12 no `ControleDeAcesso`
 - [ ] Consulta única das confirmações do dia, sem consultas em cascata
 
@@ -227,6 +230,7 @@ Valores de status: Não iniciada, Em andamento, Concluída.
 - [ ] Motorista consulta turmas do grupo em que atua e recebe 403 fora dele
 - [ ] Admin consulta qualquer turma e qualquer grupo
 - [ ] O selo `voce` aparece só no item do aluno autenticado
+- [ ] Motorista-chefe que não conduz turma recebe lista vazia em `GET /motorista/turmas`
 
 ---
 
@@ -236,6 +240,7 @@ Valores de status: Não iniciada, Em andamento, Concluída.
 - [ ] `PUT /me/push-token`
 - [ ] `DELETE /me/push-token`
 - [ ] Interface `PushGateway` e implementação que chama o Expo Push Service
+- [ ] Campo `data` (`tipo` e `turmaId`) no push de cancelamento tardio e no lembrete
 - [ ] Implementação falsa do gateway para os testes
 - [ ] Token apagado quando o Expo responde `DeviceNotRegistered`
 - [ ] Listener do evento `IdaCanceladaAposSaida`, executado depois do commit
@@ -254,13 +259,14 @@ Valores de status: Não iniciada, Em andamento, Concluída.
 - [ ] Um minuto antes ou depois do horário de disparo, nada é enviado
 - [ ] Fora dos dias configurados, nada é enviado
 - [ ] Usuário sem token é ignorado sem erro
+- [ ] O gateway falso registra o `data` correto nos dois tipos de push
 
 ---
 
 ## Etapa 9 — Dados de demonstração e fechamento
 
 **Construção**
-- [ ] Carga de dados no perfil `dev` com o cenário das telas (grupos Manhã e Noite, motoristas, turmas, alunos e vínculos)
+- [ ] Carga de dados no perfil `dev` com o cenário das telas (grupos Manhã e Noite, motoristas, turmas, alunos e vínculos, e alunos sem vínculo para as telas D6 e D10)
 - [ ] Teste de ponta a ponta com MockMvc e Testcontainers (do cadastro do grupo até a lista com cancelamento tardio)
 - [ ] Revisão da RNF08: cada regra das etapas 4 a 6 tem teste que chama a API diretamente
 - [ ] README com instruções de execução, variáveis de ambiente, Swagger, usuários de demonstração e `app.relogio.fixo`
@@ -275,14 +281,16 @@ Valores de status: Não iniciada, Em andamento, Concluída.
 
 ## Ajustes fora do backend
 
-Itens que as decisões da equipe geraram para o design e para o app. Não bloqueiam o backend, mas precisam de dono.
+Itens que as decisões da equipe geraram para o design e para o app. Não bloqueiam o backend, mas precisam de dono. Os itens de tela abaixo estão marcados porque já foram aplicados no protótipo (2026-10-13); a implementação no app é acompanhada em `checklist-frontend.md`.
 
-- [ ] Telas B5 e B6: retirar o botão "Abrir WhatsApp" e manter apenas o aviso
-- [ ] Tela D2 (edição): incluir a ação de excluir grupo, com confirmação e tratamento do erro `GRUPO_COM_TURMAS`
-- [ ] Tela D5: incluir a ação de excluir turma, com confirmação
-- [ ] Tela D5: permitir editar nome, número da van e capacidade
-- [ ] Tela D4: incluir o campo "Nome da turma"
-- [ ] Demais telas: exibir o nome da turma onde hoje aparece "Van N"
+- [x] Telas B5 e B6: retirar o botão "Abrir WhatsApp" e manter apenas o aviso
+- [x] Tela D2 (edição): incluir a ação de excluir grupo, com confirmação e tratamento do erro `GRUPO_COM_TURMAS` *(no protótipo, tela D2b)*
+- [x] Tela D5: incluir a ação de excluir turma, com confirmação *(no protótipo, tela D5a)*
+- [x] Tela D5: permitir editar nome, número da van e capacidade *(no protótipo, tela D5a)*
+- [x] Tela D4: incluir o campo "Nome da turma"
+- [x] Demais telas: exibir o nome da turma onde hoje aparece "Van N"
+- [x] Protótipo: abas do chefe iguais às do motorista mais Gestão; D1 com quatro atalhos; D3 como lista cadastral; telas novas C0b, C6, D8, D9 e D10
+- [x] Plano de implementação do frontend e `checklist-frontend.md` criados
 - [x] MER: coluna `nome` adicionada em `TURMA`
 - [x] Documento de escopo: pontos em aberto já decididos fechados na versão 7 (destinatário do push, confirmação do cancelamento tardio, antecedência do lembrete)
 - [x] Documento de escopo: exclusão de grupos e turmas, nome da turma em texto livre, bloqueio após a saída da volta e remoção do botão do WhatsApp registrados na versão 7
@@ -325,3 +333,11 @@ Registrar aqui tudo o que for decidido na implementação e não estiver no plan
 | 2026-10-07 | 2 | `ROLE_ADMIN` só é dado quando o papel é `MOTORISTA` e `admin = true` | O plano define o admin como motorista com `admin = true` |
 | 2026-10-07 | 2 | `ControleDeAcesso` já tem as regras RN10, RN11 e RN12 (`podeVerGrupo`, `podeVerTurma`, `exigirAcesso...`) com testes; nega com 403 `ACESSO_NEGADO`. O item da Etapa 7 fica para ser marcado quando as listagens usarem o componente | As etapas 3 e 4 já precisam da visibilidade em `GET /grupos` e `GET /turmas/{id}` |
 | 2026-10-07 | 2 | Swagger com botão "Authorize" (token Bearer) | Testar as rotas protegidas pelo Swagger |
+| 2026-10-08 | 3 | O teste de 409 `GRUPO_COM_TURMAS` já foi feito nesta etapa, criando a turma direto pelo repositório | Não precisa esperar as rotas de turma da Etapa 4 |
+| 2026-10-08 | 3 | `POST /admin/grupos` devolve 201; `PUT` e `GET /grupos/{id}` devolvem o mesmo formato de item de `GET /grupos` (com `totalTurmas` e `minhaTurma`) | Um único formato de grupo para o app |
+| 2026-10-08 | 3 | `minhaTurma` vem para qualquer usuário que tenha turma no grupo (inclusive o motorista-chefe, se conduzir uma); senão vem `null` | O chefe também é motorista e pode conduzir turma |
+| 2026-10-08 | 3 | `GET /grupos` ordenado por período (manhã, tarde, noite), horário de ida e nome | Ordem previsível nas telas |
+| 2026-10-08 | 3 | Ida igual ou posterior à volta devolve 400 `VALIDACAO` com `campos.horarioSaidaVolta`; a checagem fica no service | Regra de negócio no service (RNF08), mantendo o formato de erro de validação |
+| 2026-10-08 | 3 | Horários aceitos e devolvidos só como `HH:mm` (ex.: `18:10`; `18:10:00` é rejeitado) | Convenção 6 da seção 2.3 |
+| 2026-10-08 | 3 | Em `GET /grupos/{id}`, a existência é conferida antes da visibilidade (inexistente → 404, existente sem acesso → 403) | Mesma ordem prevista no `ControleDeAcesso` |
+| 2026-10-13 | 4, 5, 7, 8 e 9 | Plano revisado para a versão 4: `GET /admin/turmas` na etapa 4; `turmaId` opcional em `GET /admin/alunos` na etapa 5; `GET /admin/turmas/hoje` removido da etapa 7; campo `data` no push na etapa 8; alunos sem vínculo na carga da etapa 9. Itens correspondentes acrescentados acima, e o item de `GET /admin/turmas/hoje` retirado | Revisão das telas feita junto com o plano do frontend (pontos 11 a 14 do plano). As etapas concluídas (0 a 3) não mudam |

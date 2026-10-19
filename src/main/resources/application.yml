@@ -1,0 +1,71 @@
+spring:
+  application:
+    name: boragora-api
+  profiles:
+    default: dev
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORTA:3307}/${DB_NOME:boragora}
+    username: ${DB_USUARIO}
+    password: ${DB_SENHA}
+  jpa:
+    open-in-view: false
+    hibernate:
+      # O esquema é criado só pelo Flyway; o Hibernate apenas confere se as entidades batem com ele.
+      ddl-auto: validate
+  jackson:
+    time-zone: America/Sao_Paulo
+
+server:
+  port: ${PORTA:8080}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+app:
+  jwt:
+    # Chave do HS256, com pelo menos 32 bytes. Obrigatória fora do perfil dev.
+    segredo: ${JWT_SEGREDO}
+    validade-horas: 24
+  admin:
+    # Motorista-chefe criado na subida se ainda não existir nenhum admin.
+    nome: ${ADMIN_NOME:}
+    email: ${ADMIN_EMAIL:}
+    senha: ${ADMIN_SENHA:}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    # Credenciais padrão iguais às do docker-compose.yml, apenas para desenvolvimento local.
+    username: ${DB_USUARIO:boragora}
+    password: ${DB_SENHA:boragora}
+
+app:
+  # Valores padrão apenas para desenvolvimento local. Nunca usar fora do perfil dev.
+  jwt:
+    segredo: ${JWT_SEGREDO:segredo-de-desenvolvimento-local-nao-usar-em-producao}
+  admin:
+    nome: ${ADMIN_NOME:Motorista-chefe}
+    email: ${ADMIN_EMAIL:admin@boragora.local}
+    senha: ${ADMIN_SENHA:admin123}
+  relogio:
+    # Opcional. Ex.: 2026-10-05T18:30 congela o relógio nesse instante (fuso America/Sao_Paulo).
+    fixo: ${APP_RELOGIO_FIXO:}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  # O banco é fornecido pelo Testcontainers (ver TestcontainersConfiguration).
+
+app:
+  jwt:
+    segredo: segredo-de-teste-com-pelo-menos-32-bytes-de-tamanho
+  admin:
+    nome: Admin Teste
+    email: admin@teste.com
+    senha: senha-teste

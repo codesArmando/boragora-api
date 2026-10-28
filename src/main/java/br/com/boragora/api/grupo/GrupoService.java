@@ -1,6 +1,5 @@
 package br.com.boragora.api.grupo;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -23,11 +22,6 @@ import br.com.boragora.api.usuario.Papel;
 
 @Service
 public class GrupoService {
-
-    private static final Comparator<Grupo> ORDEM = Comparator
-            .comparing(Grupo::getPeriodo)
-            .thenComparing(Grupo::getHorarioSaidaIda)
-            .thenComparing(Grupo::getNome, String.CASE_INSENSITIVE_ORDER);
 
     private final GrupoRepository grupos;
     private final TurmaRepository turmas;
@@ -79,7 +73,7 @@ public class GrupoService {
 
     @Transactional(readOnly = true)
     public List<GrupoResposta> listar(UsuarioAutenticado usuario) {
-        List<Grupo> visiveis = controleDeAcesso.gruposVisiveis(usuario).stream().sorted(ORDEM).toList();
+        List<Grupo> visiveis = controleDeAcesso.gruposVisiveis(usuario).stream().sorted(Grupo.ORDEM_DE_EXIBICAO).toList();
         return montarRespostas(visiveis, usuario);
     }
 

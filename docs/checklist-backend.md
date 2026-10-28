@@ -20,7 +20,7 @@
 | 1 | Banco de dados e entidades | Concluída | 2026-10-07 |
 | 2 | Autenticação e usuários | Concluída | 2026-10-07 |
 | 3 | Grupos (CRUD) | Concluída | 2026-10-08 |
-| 4 | Motoristas e turmas (CRUD) | Não iniciada | |
+| 4 | Motoristas e turmas (CRUD) | Concluída | 2026-10-19 |
 | 5 | Vínculo e remoção de alunos | Não iniciada | |
 | 6 | Plano do dia do aluno | Não iniciada | |
 | 7 | Listagens do dia e visibilidade | Não iniciada | |
@@ -124,29 +124,29 @@ Valores de status: Não iniciada, Em andamento, Concluída.
 ## Etapa 4 — Motoristas e turmas: CRUD
 
 **Construção**
-- [ ] `POST /admin/motoristas`
-- [ ] `GET /admin/motoristas`
-- [ ] `GET /admin/turmas` (lista cadastral de todas as turmas, com `totalAlunos`)
-- [ ] `POST /admin/turmas` (com `nome`)
-- [ ] `PUT /admin/turmas/{id}` (nome, número da van, capacidade e motorista)
-- [ ] Validação do `nome` da turma: obrigatório, sem espaços nas pontas, de 1 a 60 caracteres
-- [ ] `DELETE /admin/turmas/{id}`
-- [ ] `GET /turmas/{id}` (dados da turma, grupo, motorista e alunos ativos em ordem alfabética)
-- [ ] `ValidadorConflitoDeGrupo` com a regra da RN08 para motoristas
-- [ ] Validação de que `motoristaId` é um usuário ativo com papel `MOTORISTA`
+- [x] `POST /admin/motoristas`
+- [x] `GET /admin/motoristas`
+- [x] `GET /admin/turmas` (lista cadastral de todas as turmas, com `totalAlunos`)
+- [x] `POST /admin/turmas` (com `nome`)
+- [x] `PUT /admin/turmas/{id}` (nome, número da van, capacidade e motorista)
+- [x] Validação do `nome` da turma: obrigatório, sem espaços nas pontas, de 1 a 60 caracteres
+- [x] `DELETE /admin/turmas/{id}`
+- [x] `GET /turmas/{id}` (dados da turma, grupo, motorista e alunos ativos em ordem alfabética)
+- [x] `ValidadorConflitoDeGrupo` com a regra da RN08 para motoristas
+- [x] Validação de que `motoristaId` é um usuário ativo com papel `MOTORISTA`
 
 **Critérios de aceite**
-- [ ] Admin cadastra motorista, cria turma, altera dados cadastrais e troca o motorista
-- [ ] Mesmo motorista em duas turmas do mesmo grupo devolve 409 `CONFLITO_GRUPO_MOTORISTA` na criação
-- [ ] O mesmo conflito devolve 409 na troca de motorista
-- [ ] Mesmo motorista em turmas de grupos diferentes é aceito
-- [ ] Turma sem nome, com nome em branco ou com mais de 60 caracteres devolve 400
-- [ ] Duas turmas com o mesmo `nome` ou o mesmo `numeroVan` no mesmo grupo são aceitas
-- [ ] Alterar o nome pela edição reflete em `GET /turmas/{id}`
-- [ ] Excluir turma devolve 204 e remove vínculos, viagens e confirmações dela
-- [ ] Depois da exclusão, o motorista e os alunos podem entrar em outra turma do mesmo grupo
-- [ ] `GET /turmas/{id}` respeita a visibilidade (403 para quem não pode ver)
-- [ ] `GET /admin/turmas` devolve todas as turmas para o admin, com `totalAlunos` contando só vínculos ativos, e 403 para não-admin
+- [x] Admin cadastra motorista, cria turma, altera dados cadastrais e troca o motorista
+- [x] Mesmo motorista em duas turmas do mesmo grupo devolve 409 `CONFLITO_GRUPO_MOTORISTA` na criação
+- [x] O mesmo conflito devolve 409 na troca de motorista
+- [x] Mesmo motorista em turmas de grupos diferentes é aceito
+- [x] Turma sem nome, com nome em branco ou com mais de 60 caracteres devolve 400
+- [x] Duas turmas com o mesmo `nome` ou o mesmo `numeroVan` no mesmo grupo são aceitas
+- [x] Alterar o nome pela edição reflete em `GET /turmas/{id}`
+- [x] Excluir turma devolve 204 e remove vínculos, viagens e confirmações dela
+- [x] Depois da exclusão, o motorista e os alunos podem entrar em outra turma do mesmo grupo
+- [x] `GET /turmas/{id}` respeita a visibilidade (403 para quem não pode ver)
+- [x] `GET /admin/turmas` devolve todas as turmas para o admin, com `totalAlunos` contando só vínculos ativos, e 403 para não-admin
 
 ---
 
@@ -341,3 +341,13 @@ Registrar aqui tudo o que for decidido na implementação e não estiver no plan
 | 2026-10-08 | 3 | Horários aceitos e devolvidos só como `HH:mm` (ex.: `18:10`; `18:10:00` é rejeitado) | Convenção 6 da seção 2.3 |
 | 2026-10-08 | 3 | Em `GET /grupos/{id}`, a existência é conferida antes da visibilidade (inexistente → 404, existente sem acesso → 403) | Mesma ordem prevista no `ControleDeAcesso` |
 | 2026-10-13 | 4, 5, 7, 8 e 9 | Plano revisado para a versão 4: `GET /admin/turmas` na etapa 4; `turmaId` opcional em `GET /admin/alunos` na etapa 5; `GET /admin/turmas/hoje` removido da etapa 7; campo `data` no push na etapa 8; alunos sem vínculo na carga da etapa 9. Itens correspondentes acrescentados acima, e o item de `GET /admin/turmas/hoje` retirado | Revisão das telas feita junto com o plano do frontend (pontos 11 a 14 do plano). As etapas concluídas (0 a 3) não mudam |
+| 2026-10-19 | 4 | `POST /admin/motoristas` devolve 201 e reaproveita as regras do cadastro: e-mail normalizado, senha de 6 a 72 caracteres, 409 `EMAIL_JA_CADASTRADO`. Campos `admin` e `papel` no corpo são ignorados | Mesmo comportamento do `POST /auth/cadastro`; o chefe não cria outro chefe |
+| 2026-10-19 | 4 | `GET /admin/motoristas` devolve `id`, `nome`, `email` e `admin` (marca o chefe), em ordem alfabética | O plano do app pede `id`, `nome` e `email`; `admin` ajuda a identificar o chefe nos seletores |
+| 2026-10-19 | 4 | `POST` e `PUT /admin/turmas` e `GET /turmas/{id}` devolvem o mesmo formato (`id`, `nome`, `numeroVan`, `capacidade`, `grupo`, `motorista`, `alunos`). `POST` devolve 201 | Um único formato de turma para as telas D4, D5 e D5a |
+| 2026-10-19 | 4 | `PUT /admin/turmas/{id}` substitui todos os dados: `nome` e `motoristaId` obrigatórios; `numeroVan` ou `capacidade` ausentes ficam nulos | Semântica de PUT; os dois campos são opcionais desde a Etapa 1 |
+| 2026-10-19 | 4 | `numeroVan` e `capacidade`, quando informados, precisam ser maiores que zero (400 `VALIDACAO`) | Evitar dados cadastrais sem sentido |
+| 2026-10-19 | 4 | Espaços nas pontas do `nome` da turma são retirados antes da validação; o limite de 60 vale para o nome gravado | Mesmo tratamento dado ao nome do grupo |
+| 2026-10-19 | 4 | `grupoId` inexistente ou `motoristaId` que não seja motorista ativo devolvem 400 `VALIDACAO` com o campo em `campos`; 404 fica só para o `id` da rota | São campos do corpo, não o recurso da rota |
+| 2026-10-19 | 4 | A mensagem do 409 `CONFLITO_GRUPO_MOTORISTA` cita a turma em conflito; editar sem trocar o motorista não passa pelo validador | Mensagem útil na tela; a troca é o único caso que pode gerar conflito na edição |
+| 2026-10-19 | 4 | `GET /admin/turmas` em ordem de grupo (mesma de `GET /grupos`, com o `id` do grupo como desempate) e depois nome da turma sem diferenciar maiúsculas | Turmas do mesmo grupo sempre juntas na tela D3 |
+| 2026-10-19 | 4 | O critério de alunos livres após a exclusão foi testado conferindo que não sobra vínculo ativo no grupo e vinculando o aluno pelo repositório | `POST /admin/turmas/{id}/alunos` é da Etapa 5 |

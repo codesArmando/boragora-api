@@ -31,11 +31,19 @@ public class DadosDeTeste {
     }
 
     public Usuario aluno() {
-        return usuarios.save(new Usuario("Aluno", emailUnico("aluno"), senhas.encode(SENHA), Papel.ALUNO));
+        return aluno("Aluno");
+    }
+
+    public Usuario aluno(String nome) {
+        return usuarios.save(new Usuario(nome, emailUnico("aluno"), senhas.encode(SENHA), Papel.ALUNO));
     }
 
     public Usuario motorista() {
-        return usuarios.save(new Usuario("Motorista", emailUnico("motorista"), senhas.encode(SENHA), Papel.MOTORISTA));
+        return motorista("Motorista");
+    }
+
+    public Usuario motorista(String nome) {
+        return usuarios.save(new Usuario(nome, emailUnico("motorista"), senhas.encode(SENHA), Papel.MOTORISTA));
     }
 
     public Usuario admin() {

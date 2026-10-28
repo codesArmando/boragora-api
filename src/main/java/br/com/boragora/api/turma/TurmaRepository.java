@@ -13,7 +13,12 @@ public interface TurmaRepository extends JpaRepository<Turma, Long> {
 
     boolean existsByMotoristaIdAndGrupoId(Long motoristaId, Long grupoId);
 
+    Optional<Turma> findByMotoristaIdAndGrupoId(Long motoristaId, Long grupoId);
+
     boolean existsByGrupoId(Long grupoId);
+
+    @Query("select t from Turma t join fetch t.grupo join fetch t.motorista")
+    List<Turma> findAllComGrupoEMotorista();
 
     @Query("select t.grupo.id from Turma t where t.id = :turmaId")
     Optional<Long> findGrupoIdById(Long turmaId);

@@ -21,7 +21,7 @@
 | 2 | Autenticação e usuários | Concluída | 2026-10-07 |
 | 3 | Grupos (CRUD) | Concluída | 2026-10-08 |
 | 4 | Motoristas e turmas (CRUD) | Concluída | 2026-10-19 |
-| 5 | Vínculo e remoção de alunos | Não iniciada | |
+| 5 | Vínculo e remoção de alunos | Concluída | 2026-11-02 |
 | 6 | Plano do dia do aluno | Não iniciada | |
 | 7 | Listagens do dia e visibilidade | Não iniciada | |
 | 8 | Notificações push | Não iniciada | |
@@ -153,23 +153,23 @@ Valores de status: Não iniciada, Em andamento, Concluída.
 ## Etapa 5 — Vínculo e remoção de alunos
 
 **Construção**
-- [ ] `GET /admin/alunos?busca=&turmaId=` com `situacao` (`DISPONIVEL` ou `CONFLITO_NO_GRUPO`) e turmas atuais de cada aluno
-- [ ] `turmaId` opcional em `GET /admin/alunos`: sem ele, listagem geral de alunos ativos (tela D10), sem `situacao`
-- [ ] `POST /admin/turmas/{id}/alunos` (lote, tudo ou nada)
-- [ ] `DELETE /admin/turmas/{id}/alunos/{alunoId}` (desativa o vínculo)
-- [ ] RN08 para alunos no mesmo `ValidadorConflitoDeGrupo`
-- [ ] Validação de que só usuários ativos com papel `ALUNO` são vinculados
-- [ ] Reativação do vínculo inativo em vez de criar outro registro
+- [x] `GET /admin/alunos?busca=&turmaId=` com `situacao` (`DISPONIVEL` ou `CONFLITO_NO_GRUPO`) e turmas atuais de cada aluno
+- [x] `turmaId` opcional em `GET /admin/alunos`: sem ele, listagem geral de alunos ativos (tela D10), sem `situacao`
+- [x] `POST /admin/turmas/{id}/alunos` (lote, tudo ou nada)
+- [x] `DELETE /admin/turmas/{id}/alunos/{alunoId}` (desativa o vínculo)
+- [x] RN08 para alunos no mesmo `ValidadorConflitoDeGrupo`
+- [x] Validação de que só usuários ativos com papel `ALUNO` são vinculados
+- [x] Reativação do vínculo inativo em vez de criar outro registro
 
 **Critérios de aceite**
-- [ ] Vincular dois alunos de uma vez funciona, e eles aparecem em `GET /turmas/{id}`
-- [ ] Aluno já vinculado a outra turma do mesmo grupo devolve 409 `CONFLITO_GRUPO_ALUNO`, e ninguém do lote é vinculado
-- [ ] Aluno pode estar em turmas de grupos diferentes
-- [ ] Tentar vincular um motorista como aluno é rejeitado
-- [ ] Remover e vincular de novo reutiliza o mesmo registro
-- [ ] Aluno removido deixa de aparecer em `GET /turmas/{id}`
-- [ ] A busca filtra por nome e por e-mail, e não lista quem já está na turma
-- [ ] Sem `turmaId`, a lista traz alunos com e sem vínculo, com `turmas` vazia para quem não tem vínculo ativo e `situacao` nula
+- [x] Vincular dois alunos de uma vez funciona, e eles aparecem em `GET /turmas/{id}`
+- [x] Aluno já vinculado a outra turma do mesmo grupo devolve 409 `CONFLITO_GRUPO_ALUNO`, e ninguém do lote é vinculado
+- [x] Aluno pode estar em turmas de grupos diferentes
+- [x] Tentar vincular um motorista como aluno é rejeitado
+- [x] Remover e vincular de novo reutiliza o mesmo registro
+- [x] Aluno removido deixa de aparecer em `GET /turmas/{id}`
+- [x] A busca filtra por nome e por e-mail, e não lista quem já está na turma
+- [x] Sem `turmaId`, a lista traz alunos com e sem vínculo, com `turmas` vazia para quem não tem vínculo ativo e `situacao` nula
 
 ---
 
@@ -351,3 +351,11 @@ Registrar aqui tudo o que for decidido na implementação e não estiver no plan
 | 2026-10-19 | 4 | A mensagem do 409 `CONFLITO_GRUPO_MOTORISTA` cita a turma em conflito; editar sem trocar o motorista não passa pelo validador | Mensagem útil na tela; a troca é o único caso que pode gerar conflito na edição |
 | 2026-10-19 | 4 | `GET /admin/turmas` em ordem de grupo (mesma de `GET /grupos`, com o `id` do grupo como desempate) e depois nome da turma sem diferenciar maiúsculas | Turmas do mesmo grupo sempre juntas na tela D3 |
 | 2026-10-19 | 4 | O critério de alunos livres após a exclusão foi testado conferindo que não sobra vínculo ativo no grupo e vinculando o aluno pelo repositório | `POST /admin/turmas/{id}/alunos` é da Etapa 5 |
+| 2026-11-02 | 5 | `GET /admin/alunos` devolve por item `id`, `nome`, `email`, `turmas` (vínculos ativos, cada uma com `id`, `nome` e `grupo` no mesmo formato de `GET /admin/turmas`), `situacao` e `turmaEmConflito` (`id`, `nome` e `grupo`; só quando a situação é `CONFLITO_NO_GRUPO`). Sem `turmaId`, `situacao` e `turmaEmConflito` vêm `null` | O app monta "Manhã · Van 2" com o grupo; o nome da turma em conflito vem em campo próprio, além da mensagem |
+| 2026-11-02 | 5 | A `busca` procura o trecho no nome ou no e-mail, sem diferenciar maiúsculas nem acentos (collation do banco); `busca` em branco é ignorada | "joao" encontra "João", como o usuário digita no celular |
+| 2026-11-02 | 5 | `turmaId` inexistente em `GET /admin/alunos` devolve 400 `VALIDACAO` com `campos.turmaId` | Mesmo critério da Etapa 4: 404 fica só para o `id` da rota |
+| 2026-11-02 | 5 | `POST /admin/turmas/{id}/alunos` devolve 200 com a turma atualizada (mesmo formato de `GET /turmas/{id}`). Ids repetidos contam uma vez; aluno já ativo na turma é ignorado, sem erro | A tela D5 recebe a lista nova sem outra chamada; repetir o envio não quebra nada |
+| 2026-11-02 | 5 | Id que não existe ou não é de aluno ativo (inclusive motorista) devolve 400 `VALIDACAO` com `campos.alunoIds` citando o id; `alunoIds` ausente, vazio ou com `null` também devolve 400. Em qualquer erro, ninguém do lote é vinculado | Mesmo critério da Etapa 4 para campos do corpo; tudo ou nada do plano |
+| 2026-11-02 | 5 | A mensagem do 409 `CONFLITO_GRUPO_ALUNO` cita o nome do aluno e a turma em conflito | O plano pede para informar qual aluno causou o conflito |
+| 2026-11-02 | 5 | `DELETE /admin/turmas/{id}/alunos/{alunoId}` devolve 204; turma inexistente ou aluno sem vínculo ativo nela devolve 404 `NAO_ENCONTRADO` | O vínculo é o recurso da rota |
+| 2026-11-02 | 5 | No vínculo, as linhas dos alunos em `usuario` são travadas (`SELECT ... FOR UPDATE`, em ordem de id) até o fim da transação. Não há teste automatizado de concorrência para esse caso | O banco não tem restrição única de aluno por grupo (só por turma), então sem a trava dois vínculos simultâneos do mesmo aluno em turmas do mesmo grupo passariam pela RN08. Não altera o esquema |

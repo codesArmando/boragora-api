@@ -1,8 +1,11 @@
 package br.com.boragora.api.turma;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -22,7 +25,7 @@ import br.com.boragora.api.usuario.UsuarioRepository;
 public class TurmaService {
 
     /** Lista cadastral: grupos na ordem de {@code GET /grupos}, depois o nome da turma. */
-    private static final Comparator<Turma> ORDEM_CADASTRAL = Comparator
+    static final Comparator<Turma> ORDEM_CADASTRAL = Comparator
             .comparing(Turma::getGrupo, Grupo.ORDEM_DE_EXIBICAO)
             .thenComparing(Turma::getNome, String.CASE_INSENSITIVE_ORDER)
             .thenComparing(Turma::getId);
@@ -77,6 +80,45 @@ public class TurmaService {
         turmas.flush();
     }
 
+    /**
+     * Vincula o lote inteiro ou ninguém (RF03). Quem já está ativo na turma é ignorado; vínculo
+     * inativo é reativado. As linhas dos alunos ficam travadas até o fim da transação, para que
+     * dois vínculos simultâneos do mesmo aluno não furem a RN08.
+     */
+    @Transactional
+    public TurmaResposta vincularAlunos(Long id, VinculoRequisicao requisicao) {
+        Turma turma = buscar(id);
+        List<Long> ids = requisicao.alunoIds().stream().distinct().toList();
+        Map<Long, Usuario> travados = usuarios.travarPorIds(ids).stream()
+                .collect(Collectors.toMap(Usuario::getId, Function.identity()));
+
+        List<Usuario> novos = new ArrayList<>();
+        List<TurmaAluno> aReativar = new ArrayList<>();
+        for (Long alunoId : ids) {
+            Usuario aluno = exigirAluno(travados.get(alunoId), alunoId);
+            Optional<TurmaAluno> existente = vinculos.findByTurmaIdAndAlunoId(turma.getId(), aluno.getId());
+            if (existente.filter(TurmaAluno::isAtivo).isPresent()) {
+                continue;
+            }
+            validadorConflito.validarAluno(aluno, turma.getGrupo().getId());
+            existente.ifPresentOrElse(aReativar::add, () -> novos.add(aluno));
+        }
+        aReativar.forEach(vinculo -> vinculo.setAtivo(true));
+        novos.forEach(aluno -> vinculos.save(new TurmaAluno(turma, aluno)));
+        vinculos.flush();
+        return montarResposta(turma);
+    }
+
+    /** Desativa o vínculo; não há exclusão física (RN18). */
+    @Transactional
+    public void removerAluno(Long id, Long alunoId) {
+        buscar(id);
+        vinculos.findByTurmaIdAndAlunoId(id, alunoId)
+                .filter(TurmaAluno::isAtivo)
+                .orElseThrow(() -> RegraDeNegocioException.naoEncontrado("Este aluno não está vinculado a esta turma."))
+                .setAtivo(false);
+    }
+
     @Transactional(readOnly = true)
     public TurmaResposta detalhar(Long id, UsuarioAutenticado usuario) {
         Turma turma = buscar(id);
@@ -106,6 +148,14 @@ public class TurmaService {
                 .filter(usuario -> usuario.isAtivo() && usuario.getPapel() == Papel.MOTORISTA)
                 .orElseThrow(() -> RegraDeNegocioException.validacao("motoristaId",
                         "O motorista informado não existe ou não está ativo."));
+    }
+
+    private static Usuario exigirAluno(Usuario usuario, Long alunoId) {
+        if (usuario == null || !usuario.isAtivo() || usuario.getPapel() != Papel.ALUNO) {
+            throw RegraDeNegocioException.validacao("alunoIds",
+                    "O usuário %d não existe ou não é um aluno ativo.".formatted(alunoId));
+        }
+        return usuario;
     }
 
     /** A restrição única (id_grupo, id_motorista) é a segunda barreira da RN08. */

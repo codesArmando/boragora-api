@@ -54,6 +54,19 @@ public class TurmaController {
         service.excluir(id);
     }
 
+    @PostMapping("/admin/turmas/{id}/alunos")
+    @Operation(summary = "Vincula alunos à turma, tudo ou nada; devolve a turma atualizada (tela D6)")
+    public TurmaResposta vincularAlunos(@PathVariable Long id, @RequestBody @Valid VinculoRequisicao requisicao) {
+        return service.vincularAlunos(id, requisicao);
+    }
+
+    @DeleteMapping("/admin/turmas/{id}/alunos/{alunoId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Remove o aluno da turma, desativando o vínculo (tela D5)")
+    public void removerAluno(@PathVariable Long id, @PathVariable Long alunoId) {
+        service.removerAluno(id, alunoId);
+    }
+
     @GetMapping("/turmas/{id}")
     @Operation(summary = "Turma com grupo, motorista e alunos ativos, respeitando a visibilidade (telas C4, D5 e D5a)")
     public TurmaResposta detalhar(@PathVariable Long id, @AuthenticationPrincipal UsuarioAutenticado usuario) {

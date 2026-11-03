@@ -23,7 +23,7 @@
 | 4 | Motoristas e turmas (CRUD) | Concluída | 2026-10-19 |
 | 5 | Vínculo e remoção de alunos | Concluída | 2026-11-02 |
 | 6 | Plano do dia do aluno | Concluída | 2026-11-02 |
-| 7 | Listagens do dia e visibilidade | Não iniciada | |
+| 7 | Listagens do dia e visibilidade | Concluída | 2026-11-02 |
 | 8 | Notificações push | Não iniciada | |
 | 9 | Dados de demonstração e fechamento | Não iniciada | |
 
@@ -211,26 +211,26 @@ Valores de status: Não iniciada, Em andamento, Concluída.
 ## Etapa 7 — Listagens do dia e visibilidade
 
 **Construção**
-- [ ] `GET /motorista/turmas` (turmas do motorista com contadores)
-- [ ] `GET /turmas/{id}/hoje` (contadores, `listaIda`, `listaVolta`, `semConfirmacoes`)
-- [ ] `GET /grupos/{id}/hoje` (todas as turmas do grupo, com `minhaTurma` e `voce`)
-- [ ] Regras de visibilidade RN10, RN11 e RN12 no `ControleDeAcesso`
-- [ ] Consulta única das confirmações do dia, sem consultas em cascata
+- [x] `GET /motorista/turmas` (turmas do motorista com contadores)
+- [x] `GET /turmas/{id}/hoje` (contadores, `listaIda`, `listaVolta`, `semConfirmacoes`)
+- [x] `GET /grupos/{id}/hoje` (todas as turmas do grupo, com `minhaTurma` e `voce`)
+- [x] Regras de visibilidade RN10, RN11 e RN12 no `ControleDeAcesso`
+- [x] Consulta única das confirmações do dia, sem consultas em cascata
 
 **Critérios de aceite**
-- [ ] Lista da ida traz quem tem ida marcada e quem cancelou depois da saída, este com `CANCELADO_APOS_SAIDA`
-- [ ] `vaoNaIda` não conta o cancelado tardio; `canceladosAposSaida` conta
-- [ ] Lista da volta traz só quem tem volta marcada, com liberados primeiro
-- [ ] `liberados` conta apenas volta marcada com status `LIBERADO`
-- [ ] Quem não declarou o plano não aparece em nenhuma lista
-- [ ] Confirmação de vínculo inativo não aparece
-- [ ] Turma sem confirmações devolve `semConfirmacoes = true` e listas vazias
-- [ ] Nenhuma consulta cria viagem
-- [ ] Aluno consulta o próprio grupo e recebe 403 em grupo sem vínculo
-- [ ] Motorista consulta turmas do grupo em que atua e recebe 403 fora dele
-- [ ] Admin consulta qualquer turma e qualquer grupo
-- [ ] O selo `voce` aparece só no item do aluno autenticado
-- [ ] Motorista-chefe que não conduz turma recebe lista vazia em `GET /motorista/turmas`
+- [x] Lista da ida traz quem tem ida marcada e quem cancelou depois da saída, este com `CANCELADO_APOS_SAIDA`
+- [x] `vaoNaIda` não conta o cancelado tardio; `canceladosAposSaida` conta
+- [x] Lista da volta traz só quem tem volta marcada, com liberados primeiro
+- [x] `liberados` conta apenas volta marcada com status `LIBERADO`
+- [x] Quem não declarou o plano não aparece em nenhuma lista
+- [x] Confirmação de vínculo inativo não aparece
+- [x] Turma sem confirmações devolve `semConfirmacoes = true` e listas vazias
+- [x] Nenhuma consulta cria viagem
+- [x] Aluno consulta o próprio grupo e recebe 403 em grupo sem vínculo
+- [x] Motorista consulta turmas do grupo em que atua e recebe 403 fora dele
+- [x] Admin consulta qualquer turma e qualquer grupo
+- [x] O selo `voce` aparece só no item do aluno autenticado
+- [x] Motorista-chefe que não conduz turma recebe lista vazia em `GET /motorista/turmas`
 
 ---
 
@@ -369,3 +369,10 @@ Registrar aqui tudo o que for decidido na implementação e não estiver no plan
 | 2026-11-02 | 6 | A viagem é criada em transação própria (`CriadorDeViagem`, `REQUIRES_NEW`); se a restrição única falhar, a viagem é relida com trava de leitura. Cada `PUT` trava a linha do vínculo do aluno (`turma_aluno`) até o fim | Uma falha de restrição dentro da transação principal a marcaria para rollback; a releitura com trava enxerga a viagem gravada pela outra transação. A trava do vínculo evita duas confirmações do mesmo aluno em cliques simultâneos. Coberto pelo teste com 6 primeiras confirmações simultâneas |
 | 2026-11-02 | 6 | `atualizado_em` gravado sem frações de segundo (a coluna é `DATETIME`); ação repetida não muda `atualizado_em` | Valor igual ao que o banco guarda; "sem alteração" vale também para a data de atualização |
 | 2026-11-02 | 6 | Os critérios foram testados pela API (MockMvc) com um relógio de teste ajustável (`RelogioDeTeste`, `@Primary` só nos testes), em vez de testes unitários do service | Cobre ao mesmo tempo service, controller, segurança e banco real, com o relógio fixo em cada passo |
+| 2026-11-02 | 7 | Formatos alinhados aos tipos já existentes no app (`TurmaResumo`, `TurmaListaHoje` e `GrupoHoje` em `boragora-mobile/src/types/turma.ts`): `GET /motorista/turmas` traz `id`, `nome`, `grupo`, `motorista`, `contadores` e `semConfirmacoes`, sem as listas; `GET /turmas/{id}/hoje` acrescenta `listaIda` e `listaVolta`; `GET /grupos/{id}/hoje` traz os dados do grupo, `minhaTurma` (`id` e `nome`, ou `null`) e `turmas`, cada uma com `id`, `nome`, `motorista`, `minhaTurma` (verdadeiro ou falso), `contadores`, `semConfirmacoes` e as duas listas | O app já tinha os tipos montados sobre o plano |
+| 2026-11-02 | 7 | O campo `voce` vem em todos os itens das listas, nas duas rotas (`false` para quem não é o aluno autenticado, e sempre `false` para motorista) | O tipo do app usa `voce` também em `TurmaListaHoje` |
+| 2026-11-02 | 7 | `semConfirmacoes` é verdadeiro quando as duas listas estão vazias. Um cancelado tardio sozinho deixa `semConfirmacoes = false` | O plano diz "ninguém está marcado"; com o cancelado tardio o motorista precisa ver o aviso, e a tela C5 esconderia a lista |
+| 2026-11-02 | 7 | `GET /motorista/turmas` em ordem de grupo e nome da turma (mesma de `GET /admin/turmas`); turmas de `GET /grupos/{id}/hoje` em ordem de nome | Ordem previsível nas telas |
+| 2026-11-02 | 7 | Ordem alfabética das listas pelo nome do aluno em português, ignorando acentos ("Álvaro" antes de "Bruno") | Nomes com acento no começo ficariam no fim da lista com a comparação comum |
+| 2026-11-02 | 7 | `minhaTurma` do motorista é a turma que ele conduz no grupo; do aluno, a turma em que tem vínculo ativo. Admin que não conduz turma no grupo recebe `null` e `false` | Mesmo critério de `minhaTurma` em `GET /grupos` |
+| 2026-11-02 | 7 | Turma ou grupo inexistente devolve 404 antes da checagem de visibilidade | Mesma ordem das etapas 3 e 4 |

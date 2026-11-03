@@ -25,7 +25,7 @@ import br.com.boragora.api.usuario.UsuarioRepository;
 public class TurmaService {
 
     /** Lista cadastral: grupos na ordem de {@code GET /grupos}, depois o nome da turma. */
-    static final Comparator<Turma> ORDEM_CADASTRAL = Comparator
+    public static final Comparator<Turma> ORDEM_CADASTRAL = Comparator
             .comparing(Turma::getGrupo, Grupo.ORDEM_DE_EXIBICAO)
             .thenComparing(Turma::getNome, String.CASE_INSENSITIVE_ORDER)
             .thenComparing(Turma::getId);

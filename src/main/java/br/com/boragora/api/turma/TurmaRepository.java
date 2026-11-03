@@ -20,6 +20,15 @@ public interface TurmaRepository extends JpaRepository<Turma, Long> {
     @Query("select t from Turma t join fetch t.grupo join fetch t.motorista")
     List<Turma> findAllComGrupoEMotorista();
 
+    @Query("select t from Turma t join fetch t.grupo join fetch t.motorista where t.id = :id")
+    Optional<Turma> findComGrupoEMotorista(Long id);
+
+    @Query("select t from Turma t join fetch t.grupo join fetch t.motorista where t.motorista.id = :motoristaId")
+    List<Turma> findDoMotoristaComGrupoEMotorista(Long motoristaId);
+
+    @Query("select t from Turma t join fetch t.grupo join fetch t.motorista where t.grupo.id = :grupoId")
+    List<Turma> findDoGrupoComGrupoEMotorista(Long grupoId);
+
     @Query("select t.grupo.id from Turma t where t.id = :turmaId")
     Optional<Long> findGrupoIdById(Long turmaId);
 

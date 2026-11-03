@@ -5,10 +5,12 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
 import br.com.boragora.api.grupo.Grupo;
 import br.com.boragora.api.usuario.Usuario;
+import jakarta.persistence.LockModeType;
 
 public interface TurmaAlunoRepository extends JpaRepository<TurmaAluno, Long> {
 
@@ -16,6 +18,23 @@ public interface TurmaAlunoRepository extends JpaRepository<TurmaAluno, Long> {
 
     /** Vínculo do par turma e aluno, ativo ou não: existe no máximo um (restrição única). */
     Optional<TurmaAluno> findByTurmaIdAndAlunoId(Long turmaId, Long alunoId);
+
+    @Query("select ta from TurmaAluno ta where ta.aluno.id = :alunoId and ta.turma.id = :turmaId and ta.ativo = true")
+    Optional<TurmaAluno> findVinculoAtivo(Long alunoId, Long turmaId);
+
+    /**
+     * Mesmo que {@link #findVinculoAtivo}, travando só a linha do vínculo (a consulta não faz join),
+     * para que duas alterações simultâneas do mesmo aluno na mesma turma sejam feitas uma depois da outra.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select ta from TurmaAluno ta where ta.aluno.id = :alunoId and ta.turma.id = :turmaId and ta.ativo = true")
+    Optional<TurmaAluno> travarVinculoAtivo(Long alunoId, Long turmaId);
+
+    @Query("""
+            select ta from TurmaAluno ta join fetch ta.turma t join fetch t.grupo join fetch t.motorista
+            where ta.aluno.id = :alunoId and ta.ativo = true
+            """)
+    List<TurmaAluno> findAtivosDoAlunoComTurma(Long alunoId);
 
     @Query("""
             select ta.turma from TurmaAluno ta

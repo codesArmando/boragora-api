@@ -22,7 +22,7 @@
 | 3 | Grupos (CRUD) | Concluída | 2026-10-08 |
 | 4 | Motoristas e turmas (CRUD) | Concluída | 2026-10-19 |
 | 5 | Vínculo e remoção de alunos | Concluída | 2026-11-02 |
-| 6 | Plano do dia do aluno | Não iniciada | |
+| 6 | Plano do dia do aluno | Concluída | 2026-11-02 |
 | 7 | Listagens do dia e visibilidade | Não iniciada | |
 | 8 | Notificações push | Não iniciada | |
 | 9 | Dados de demonstração e fechamento | Não iniciada | |
@@ -176,35 +176,35 @@ Valores de status: Não iniciada, Em andamento, Concluída.
 ## Etapa 6 — Plano do dia do aluno
 
 **Construção**
-- [ ] `GET /aluno/turmas` (turmas do aluno com resumo do plano de hoje)
-- [ ] `GET /aluno/turmas/{turmaId}/plano` (com o bloco `acoes`)
-- [ ] `PUT /aluno/turmas/{turmaId}/plano/ida`
-- [ ] `PUT /aluno/turmas/{turmaId}/plano/volta`
-- [ ] `PUT /aluno/turmas/{turmaId}/plano/status-volta`
-- [ ] `PlanoDoDiaService` usando o `Clock` injetado
-- [ ] Criação da `VIAGEM` e da `CONFIRMACAO` sob demanda, na primeira marcação
-- [ ] Tratamento da criação simultânea da viagem (restrição única)
-- [ ] Publicação do evento `IdaCanceladaAposSaida`
-- [ ] `atualizado_em` gravado a cada alteração
+- [x] `GET /aluno/turmas` (turmas do aluno com resumo do plano de hoje)
+- [x] `GET /aluno/turmas/{turmaId}/plano` (com o bloco `acoes`)
+- [x] `PUT /aluno/turmas/{turmaId}/plano/ida`
+- [x] `PUT /aluno/turmas/{turmaId}/plano/volta`
+- [x] `PUT /aluno/turmas/{turmaId}/plano/status-volta`
+- [x] `PlanoDoDiaService` usando o `Clock` injetado
+- [x] Criação da `VIAGEM` e da `CONFIRMACAO` sob demanda, na primeira marcação
+- [x] Tratamento da criação simultânea da viagem (restrição única)
+- [x] Publicação do evento `IdaCanceladaAposSaida`
+- [x] `atualizado_em` gravado a cada alteração
 
 **Critérios de aceite** (grupo com ida 18:10 e volta 22:30, relógio fixo)
-- [ ] 17:00, incluir ida e volta: as duas marcadas, status `EM_AULA`, viagem criada
-- [ ] 17:30, cancelar ida: ida desmarcada, `cancelouAposSaida = false`, nenhum evento
-- [ ] 18:09, incluir ida: aceito
-- [ ] 18:10, incluir ida: 422 `IDA_ENCERRADA`
-- [ ] 18:30, cancelar ida marcada: `cancelouAposSaida = true`, um evento publicado
-- [ ] 18:31, incluir ida de novo: 422 `IDA_ENCERRADA`
-- [ ] 18:30, cancelar ida não marcada: 200 sem alteração, nenhum evento
-- [ ] 19:00, incluir volta: aceito
-- [ ] 21:00, status `LIBERADO` com volta marcada: aceito
-- [ ] 21:00, status `LIBERADO` sem volta marcada: 422 `VOLTA_NAO_INCLUIDA`
-- [ ] 22:29, cancelar volta: aceito
-- [ ] 22:30, qualquer alteração (inclusive cancelar a ida): 422 `DIA_ENCERRADO`
-- [ ] Aluno sem vínculo ativo com a turma: 403
-- [ ] `GET` do plano não cria viagem nem confirmação
-- [ ] Marcar o que já está marcado devolve 200 sem alteração
-- [ ] O bloco `acoes` está correto em cada um dos estados das telas B1 a B7
-- [ ] `GET /aluno/turmas` devolve lista vazia para aluno sem vínculo
+- [x] 17:00, incluir ida e volta: as duas marcadas, status `EM_AULA`, viagem criada
+- [x] 17:30, cancelar ida: ida desmarcada, `cancelouAposSaida = false`, nenhum evento
+- [x] 18:09, incluir ida: aceito
+- [x] 18:10, incluir ida: 422 `IDA_ENCERRADA`
+- [x] 18:30, cancelar ida marcada: `cancelouAposSaida = true`, um evento publicado
+- [x] 18:31, incluir ida de novo: 422 `IDA_ENCERRADA`
+- [x] 18:30, cancelar ida não marcada: 200 sem alteração, nenhum evento
+- [x] 19:00, incluir volta: aceito
+- [x] 21:00, status `LIBERADO` com volta marcada: aceito
+- [x] 21:00, status `LIBERADO` sem volta marcada: 422 `VOLTA_NAO_INCLUIDA`
+- [x] 22:29, cancelar volta: aceito
+- [x] 22:30, qualquer alteração (inclusive cancelar a ida): 422 `DIA_ENCERRADO`
+- [x] Aluno sem vínculo ativo com a turma: 403
+- [x] `GET` do plano não cria viagem nem confirmação
+- [x] Marcar o que já está marcado devolve 200 sem alteração
+- [x] O bloco `acoes` está correto em cada um dos estados das telas B1 a B7
+- [x] `GET /aluno/turmas` devolve lista vazia para aluno sem vínculo
 
 ---
 
@@ -359,3 +359,13 @@ Registrar aqui tudo o que for decidido na implementação e não estiver no plan
 | 2026-11-02 | 5 | A mensagem do 409 `CONFLITO_GRUPO_ALUNO` cita o nome do aluno e a turma em conflito | O plano pede para informar qual aluno causou o conflito |
 | 2026-11-02 | 5 | `DELETE /admin/turmas/{id}/alunos/{alunoId}` devolve 204; turma inexistente ou aluno sem vínculo ativo nela devolve 404 `NAO_ENCONTRADO` | O vínculo é o recurso da rota |
 | 2026-11-02 | 5 | No vínculo, as linhas dos alunos em `usuario` são travadas (`SELECT ... FOR UPDATE`, em ordem de id) até o fim da transação. Não há teste automatizado de concorrência para esse caso | O banco não tem restrição única de aluno por grupo (só por turma), então sem a trava dois vínculos simultâneos do mesmo aluno em turmas do mesmo grupo passariam pela RN08. Não altera o esquema |
+| 2026-11-02 | 6 | `GET /aluno/turmas` devolve por item `turma` (`id`, `nome` e `grupo` com período e horários), `motorista` (`id` e `nome`), `incluiIda` e `incluiVolta`, em ordem de grupo (mesma de `GET /grupos`) e nome da turma | O plano lista os dados, mas não o formato; `turma` segue o mesmo formato do campo `turma` do plano |
+| 2026-11-02 | 6 | A partir da saída da volta, todo `PUT` do plano devolve 422 `DIA_ENCERRADO`, mesmo quando o pedido não mudaria nada (ex.: desmarcar o que já está desmarcado) | O dia fica encerrado para qualquer ação (RN15); antes disso, ação repetida devolve 200 sem alterar nada |
+| 2026-11-02 | 6 | `PUT .../status-volta` sem a volta marcada devolve 422 `VOLTA_NAO_INCLUIDA` mesmo que o status pedido seja o atual | RN07: o status só existe para quem vai na volta |
+| 2026-11-02 | 6 | Turma inexistente nas rotas `/aluno/turmas/{turmaId}/...` devolve 404; turma existente sem vínculo ativo do aluno devolve 403 | Mesma ordem do `ControleDeAcesso` (existência antes da permissão) |
+| 2026-11-02 | 6 | `incluir` ausente ou `status` ausente ou fora de `EM_AULA`/`LIBERADO` devolve 400 `VALIDACAO` | Validação de formato no controller |
+| 2026-11-02 | 6 | Mensagens: `IDA_ENCERRADA` usa o texto da seção 2.3; `VOLTA_NAO_INCLUIDA` "Inclua a volta no plano de hoje antes de informar o status."; `DIA_ENCERRADO` "A volta de hoje já saiu. O plano não pode mais ser alterado." | O app pode exibir a `mensagem` direto |
+| 2026-11-02 | 6 | Evento `IdaCanceladaAposSaida` com `turmaId`, `alunoId`, `confirmacaoId` e `data`, publicado com o `ApplicationEventPublisher` dentro da transação | A etapa 8 decide como consumir (o natural é `@TransactionalEventListener` depois do commit) |
+| 2026-11-02 | 6 | A viagem é criada em transação própria (`CriadorDeViagem`, `REQUIRES_NEW`); se a restrição única falhar, a viagem é relida com trava de leitura. Cada `PUT` trava a linha do vínculo do aluno (`turma_aluno`) até o fim | Uma falha de restrição dentro da transação principal a marcaria para rollback; a releitura com trava enxerga a viagem gravada pela outra transação. A trava do vínculo evita duas confirmações do mesmo aluno em cliques simultâneos. Coberto pelo teste com 6 primeiras confirmações simultâneas |
+| 2026-11-02 | 6 | `atualizado_em` gravado sem frações de segundo (a coluna é `DATETIME`); ação repetida não muda `atualizado_em` | Valor igual ao que o banco guarda; "sem alteração" vale também para a data de atualização |
+| 2026-11-02 | 6 | Os critérios foram testados pela API (MockMvc) com um relógio de teste ajustável (`RelogioDeTeste`, `@Primary` só nos testes), em vez de testes unitários do service | Cobre ao mesmo tempo service, controller, segurança e banco real, com o relógio fixo em cada passo |

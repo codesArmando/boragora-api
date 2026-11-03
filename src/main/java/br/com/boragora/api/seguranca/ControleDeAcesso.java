@@ -78,7 +78,7 @@ public class ControleDeAcesso {
         }
     }
 
-    private static RegraDeNegocioException acessoNegado() {
+    public static RegraDeNegocioException acessoNegado() {
         return new RegraDeNegocioException("ACESSO_NEGADO", HttpStatus.FORBIDDEN,
                 RespostasDeSeguranca.ACESSO_NEGADO.mensagem());
     }

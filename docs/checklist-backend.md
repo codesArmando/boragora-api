@@ -25,7 +25,7 @@
 | 6 | Plano do dia do aluno | Concluída | 2026-11-02 |
 | 7 | Listagens do dia e visibilidade | Concluída | 2026-11-02 |
 | 8 | Notificações push | Concluída | 2026-11-03 |
-| 9 | Dados de demonstração e fechamento | Não iniciada | |
+| 9 | Dados de demonstração e fechamento | Em andamento | |
 
 Valores de status: Não iniciada, Em andamento, Concluída.
 
@@ -266,14 +266,14 @@ Valores de status: Não iniciada, Em andamento, Concluída.
 ## Etapa 9 — Dados de demonstração e fechamento
 
 **Construção**
-- [ ] Carga de dados no perfil `dev` com o cenário das telas (grupos Manhã e Noite, motoristas, turmas, alunos e vínculos, e alunos sem vínculo para as telas D6 e D10)
-- [ ] Teste de ponta a ponta com MockMvc e Testcontainers (do cadastro do grupo até a lista com cancelamento tardio)
-- [ ] Revisão da RNF08: cada regra das etapas 4 a 6 tem teste que chama a API diretamente
-- [ ] README com instruções de execução, variáveis de ambiente, Swagger, usuários de demonstração e `app.relogio.fixo`
-- [ ] API escutando em `0.0.0.0` para acesso pelo celular na rede local
+- [x] Carga de dados no perfil `dev` com o cenário das telas (grupos Manhã e Noite, motoristas, turmas, alunos e vínculos, e alunos sem vínculo para as telas D6 e D10)
+- [x] Teste de ponta a ponta com MockMvc e Testcontainers (do cadastro do grupo até a lista com cancelamento tardio)
+- [x] Revisão da RNF08: cada regra das etapas 4 a 6 tem teste que chama a API diretamente
+- [x] README com instruções de execução, variáveis de ambiente, Swagger, usuários de demonstração e `app.relogio.fixo`
+- [x] API escutando em `0.0.0.0` para acesso pelo celular na rede local
 
 **Critérios de aceite**
-- [ ] `./gradlew test` passa por completo
+- [x] `./gradlew test` passa por completo
 - [ ] Com o perfil `dev`, todas as telas do design podem ser percorridas usando apenas o Swagger *(verificação manual)*
 - [ ] O app, rodando no celular, consegue fazer login na API da máquina local *(verificação manual)*
 
@@ -385,3 +385,9 @@ Registrar aqui tudo o que for decidido na implementação e não estiver no plan
 | 2026-11-03 | 8 | `app.lembrete.agendado` (padrão `true`) liga a tarefa a cada minuto; no perfil `test` fica `false` e os testes chamam o lembrete diretamente com o relógio fixo. As outras propriedades: `app.lembrete.antecedencia-minutos` (`LEMBRETE_ANTECEDENCIA_MINUTOS`), `app.lembrete.dias` (`LEMBRETE_DIAS`, ex.: `MONDAY,TUESDAY`) e `app.expo.url` (`EXPO_PUSH_URL`) | Sem isso a tarefa real rodaria durante os testes com o relógio de teste |
 | 2026-11-03 | 8 | `data` do push: `{"tipo": "CANCELAMENTO_TARDIO" \| "LEMBRETE", "turmaId": <número>}`; o push também vai com `sound: "default"` | Campo `data` da decisão 12; som padrão para o aviso ser notado |
 | 2026-11-03 | 8 | O gateway real foi testado contra um servidor HTTP local que responde como o Expo (sucesso, `DeviceNotRegistered`, outro erro e HTTP 500). O envio de verdade para o Expo fica para verificação manual com um aparelho | Os testes não acessam a internet |
+| 2026-11-03 | 9 | Carga de demonstração: Carlos Menezes conduz a Van 1 da Manhã e da Noite; Vanderlei Dias, a Van 2 da Manhã e da Noite. João Gabriel está em Manhã · Van 1 e Noite · Van 2. A Noite · Van 2 tem os oito alunos da tela C4 | Os dados falsos do app divergem entre si sobre quem conduz a Van 2 da Manhã; seguido o plano (Vanderlei na Manhã e na Noite, João em Manhã · Van 1 e Noite · Van 2) e a maioria dos mocks |
+| 2026-11-03 | 9 | A carga também cria as confirmações do dia em que roda na Noite · Van 2, com os contadores da tela C1 (5 vão, 7 voltam, 2 liberados, 1 cancelamento tardio da Camila Rocha; Rafael Lima sem plano) | Para as telas C1, C2, B3, B6 e B8 mostrarem o mesmo que o design sem nenhuma ação manual |
+| 2026-11-03 | 9 | Carga ligada por `app.demonstracao.carga` (`APP_DEMONSTRACAO`, padrão `true` só no `dev`), roda uma vez e é pulada se qualquer e-mail da carga já existir. Senha de todos: `senha123` | Não quebrar a subida em um banco local que já tenha alguns desses usuários |
+| 2026-11-03 | 9 | `server.address` configurável por `ENDERECO`, com padrão `0.0.0.0` | Acesso pelo celular na rede local. Conferido subindo o perfil `dev` e chamando `/health` pelo IP da máquina |
+| 2026-11-03 | 9 | Revisão da RNF08: as regras das etapas 4 a 6 são todas testadas chamando a API pelo MockMvc, com token: RN08 de motorista na criação e na troca e motorista ativo (`TurmaApiTest`); RN08 de aluno, papel `ALUNO` ativo, tudo ou nada e reativação (`VinculoApiTest`); RN02, RN03, RN05, RN07, RN14, RN15 e vínculo ativo (`PlanoDoDiaApiTest`). O teste de ponta a ponta é o `FluxoCompletoApiTest` | Nenhuma regra depende do app para ser aplicada |
+| 2026-11-03 | 9 | Etapa fica "Em andamento" até a equipe conferir os dois itens de verificação manual (percorrer as telas pelo Swagger e login pelo celular) | Regra do checklist: a etapa só é concluída com todos os itens marcados |

@@ -1,5 +1,6 @@
 package br.com.boragora.api.turma;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -66,4 +67,17 @@ public interface TurmaAlunoRepository extends JpaRepository<TurmaAluno, Long> {
             from TurmaAluno ta where ta.ativo = true group by ta.turma.id
             """)
     List<TotalDeAlunos> contarAtivosPorTurma();
+
+    /**
+     * Destinatários do lembrete (RF13): vínculos ativos nas turmas dos grupos, de alunos ativos com
+     * token, que não marcaram ida nem volta no dia.
+     */
+    @Query("""
+            select ta from TurmaAluno ta join fetch ta.aluno a join fetch ta.turma t
+            where t.grupo.id in :grupoIds and ta.ativo = true and a.ativo = true and a.expoPushToken is not null
+              and not exists (
+                  select 1 from Confirmacao c
+                  where c.turmaAluno = ta and c.viagem.data = :data and (c.incluiIda = true or c.incluiVolta = true))
+            """)
+    List<TurmaAluno> findSemPlanoNoDiaComToken(Collection<Long> grupoIds, LocalDate data);
 }

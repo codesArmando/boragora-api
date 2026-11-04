@@ -32,6 +32,12 @@ app:
     nome: ${ADMIN_NOME:}
     email: ${ADMIN_EMAIL:}
     senha: ${ADMIN_SENHA:}
+  lembrete:
+    # Lembrete do plano do dia: quantos minutos antes da saída da ida, e em quais dias.
+    antecedencia-minutos: ${LEMBRETE_ANTECEDENCIA_MINUTOS:120}
+    dias: ${LEMBRETE_DIAS:MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY}
+  expo:
+    url: ${EXPO_PUSH_URL:https://exp.host/--/api/v2/push/send}
 
 ---
 spring:
@@ -69,3 +75,6 @@ app:
     nome: Admin Teste
     email: admin@teste.com
     senha: senha-teste
+  lembrete:
+    # Os testes chamam o lembrete diretamente, com o relógio fixo.
+    agendado: false

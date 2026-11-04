@@ -12,15 +12,15 @@ import org.springframework.test.context.ActiveProfiles;
 
 /**
  * Aplicação completa com MockMvc e MySQL do Testcontainers. Todas as classes com esta
- * anotação compartilham o mesmo contexto, o mesmo container e o {@link RelogioDeTeste}.
- * Os dados gravados pelas chamadas à API persistem entre os testes, então cada teste usa
- * e-mails próprios.
+ * anotação compartilham o mesmo contexto, o mesmo container, o {@link RelogioDeTeste} e o
+ * {@link PushGatewayFalso}. Os dados gravados pelas chamadas à API persistem entre os testes,
+ * então cada teste usa e-mails próprios.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import({ TestcontainersConfiguration.class, RelogioDeTesteConfiguration.class })
+@Import({ TestcontainersConfiguration.class, DublesDeTesteConfiguration.class })
 public @interface TesteDeIntegracao {
 }

@@ -24,7 +24,7 @@
 | 5 | Vínculo e remoção de alunos | Concluída | 2026-11-02 |
 | 6 | Plano do dia do aluno | Concluída | 2026-11-02 |
 | 7 | Listagens do dia e visibilidade | Concluída | 2026-11-02 |
-| 8 | Notificações push | Não iniciada | |
+| 8 | Notificações push | Concluída | 2026-11-03 |
 | 9 | Dados de demonstração e fechamento | Não iniciada | |
 
 Valores de status: Não iniciada, Em andamento, Concluída.
@@ -237,29 +237,29 @@ Valores de status: Não iniciada, Em andamento, Concluída.
 ## Etapa 8 — Notificações push
 
 **Construção**
-- [ ] `PUT /me/push-token`
-- [ ] `DELETE /me/push-token`
-- [ ] Interface `PushGateway` e implementação que chama o Expo Push Service
-- [ ] Campo `data` (`tipo` e `turmaId`) no push de cancelamento tardio e no lembrete
-- [ ] Implementação falsa do gateway para os testes
-- [ ] Token apagado quando o Expo responde `DeviceNotRegistered`
-- [ ] Listener do evento `IdaCanceladaAposSaida`, executado depois do commit
-- [ ] Texto do push de cancelamento tardio conforme a tela E1, montado com o nome da turma
-- [ ] Tarefa agendada do lembrete, a cada minuto
-- [ ] Propriedades `app.lembrete.antecedencia-minutos` (120) e `app.lembrete.dias` (segunda a sexta)
-- [ ] Texto do lembrete conforme a tela E1
+- [x] `PUT /me/push-token`
+- [x] `DELETE /me/push-token`
+- [x] Interface `PushGateway` e implementação que chama o Expo Push Service
+- [x] Campo `data` (`tipo` e `turmaId`) no push de cancelamento tardio e no lembrete
+- [x] Implementação falsa do gateway para os testes
+- [x] Token apagado quando o Expo responde `DeviceNotRegistered`
+- [x] Listener do evento `IdaCanceladaAposSaida`, executado depois do commit
+- [x] Texto do push de cancelamento tardio conforme a tela E1, montado com o nome da turma
+- [x] Tarefa agendada do lembrete, a cada minuto
+- [x] Propriedades `app.lembrete.antecedencia-minutos` (120) e `app.lembrete.dias` (segunda a sexta)
+- [x] Texto do lembrete conforme a tela E1
 
 **Critérios de aceite**
-- [ ] Cancelar a ida depois da saída gera exatamente um envio, para o motorista responsável da turma
-- [ ] O motorista-chefe não recebe o push quando não é o responsável pela turma
-- [ ] Cancelar a ida antes da saída não gera envio
-- [ ] Se o gateway lançar erro, o cancelamento continua gravado
-- [ ] Com relógio em 16:10 e ida às 18:10, o lembrete vai só para quem não marcou nada
-- [ ] Quem já marcou ida ou volta não recebe o lembrete
-- [ ] Um minuto antes ou depois do horário de disparo, nada é enviado
-- [ ] Fora dos dias configurados, nada é enviado
-- [ ] Usuário sem token é ignorado sem erro
-- [ ] O gateway falso registra o `data` correto nos dois tipos de push
+- [x] Cancelar a ida depois da saída gera exatamente um envio, para o motorista responsável da turma
+- [x] O motorista-chefe não recebe o push quando não é o responsável pela turma
+- [x] Cancelar a ida antes da saída não gera envio
+- [x] Se o gateway lançar erro, o cancelamento continua gravado
+- [x] Com relógio em 16:10 e ida às 18:10, o lembrete vai só para quem não marcou nada
+- [x] Quem já marcou ida ou volta não recebe o lembrete
+- [x] Um minuto antes ou depois do horário de disparo, nada é enviado
+- [x] Fora dos dias configurados, nada é enviado
+- [x] Usuário sem token é ignorado sem erro
+- [x] O gateway falso registra o `data` correto nos dois tipos de push
 
 ---
 
@@ -376,3 +376,12 @@ Registrar aqui tudo o que for decidido na implementação e não estiver no plan
 | 2026-11-02 | 7 | Ordem alfabética das listas pelo nome do aluno em português, ignorando acentos ("Álvaro" antes de "Bruno") | Nomes com acento no começo ficariam no fim da lista com a comparação comum |
 | 2026-11-02 | 7 | `minhaTurma` do motorista é a turma que ele conduz no grupo; do aluno, a turma em que tem vínculo ativo. Admin que não conduz turma no grupo recebe `null` e `false` | Mesmo critério de `minhaTurma` em `GET /grupos` |
 | 2026-11-02 | 7 | Turma ou grupo inexistente devolve 404 antes da checagem de visibilidade | Mesma ordem das etapas 3 e 4 |
+| 2026-11-03 | 8 | `PUT` e `DELETE /me/push-token` devolvem 204. O token precisa estar no formato `ExponentPushToken[...]` ou `ExpoPushToken[...]` (até 255 caracteres, espaços nas pontas retirados); fora disso, 400 `VALIDACAO`. `DELETE` sem token gravado também devolve 204 | Recusar na entrada o que o Expo recusaria no envio; sair da conta não pode falhar |
+| 2026-11-03 | 8 | Ao registrar um token que já está em outra conta, ele é retirado da conta anterior | Um aparelho recebe push só da última conta que entrou nele, mesmo que o app não tenha chamado o `DELETE` ao trocar de conta |
+| 2026-11-03 | 8 | O push de cancelamento tardio é enviado na mesma requisição do cancelamento, logo depois do commit, com tempo máximo de 5 s para conexão e leitura (`app.expo.timeout`). Qualquer falha, inclusive ao montar a mensagem, só vai para o log | Simples e sem fila; o tempo máximo evita que um Expo lento segure o aluno. O cancelamento já está gravado quando o envio acontece |
+| 2026-11-03 | 8 | Só o recibo imediato (ticket) do Expo é conferido para `DeviceNotRegistered`; os recibos posteriores (`getReceipts`) não são consultados | Consultar os recibos exigiria guardar os ids dos envios, sem tabela no MER. O token inválido também cai no ticket na maioria dos casos |
+| 2026-11-03 | 8 | O lembrete calcula o horário de saída como "agora + antecedência" e usa o dia dessa saída para conferir o dia da semana e as confirmações | Uma ida logo depois da meia-noite tem o lembrete no dia anterior, e é o dia da ida que importa |
+| 2026-11-03 | 8 | Quem cancelou a ida antes da saída (tudo desmarcado) recebe o lembrete | RN04: tudo desmarcado é igual a não ter declarado |
+| 2026-11-03 | 8 | `app.lembrete.agendado` (padrão `true`) liga a tarefa a cada minuto; no perfil `test` fica `false` e os testes chamam o lembrete diretamente com o relógio fixo. As outras propriedades: `app.lembrete.antecedencia-minutos` (`LEMBRETE_ANTECEDENCIA_MINUTOS`), `app.lembrete.dias` (`LEMBRETE_DIAS`, ex.: `MONDAY,TUESDAY`) e `app.expo.url` (`EXPO_PUSH_URL`) | Sem isso a tarefa real rodaria durante os testes com o relógio de teste |
+| 2026-11-03 | 8 | `data` do push: `{"tipo": "CANCELAMENTO_TARDIO" \| "LEMBRETE", "turmaId": <número>}`; o push também vai com `sound: "default"` | Campo `data` da decisão 12; som padrão para o aviso ser notado |
+| 2026-11-03 | 8 | O gateway real foi testado contra um servidor HTTP local que responde como o Expo (sucesso, `DeviceNotRegistered`, outro erro e HTTP 500). O envio de verdade para o Expo fica para verificação manual com um aparelho | Os testes não acessam a internet |

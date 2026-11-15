@@ -1,6 +1,7 @@
 package br.com.boragora.api.grupo;
 
 import java.time.LocalTime;
+import java.util.Comparator;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,6 +15,13 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "grupo")
 public class Grupo {
+
+    /** Ordem das telas: período (manhã, tarde, noite), horário de ida e nome. */
+    public static final Comparator<Grupo> ORDEM_DE_EXIBICAO = Comparator
+            .comparing(Grupo::getPeriodo)
+            .thenComparing(Grupo::getHorarioSaidaIda)
+            .thenComparing(Grupo::getNome, String.CASE_INSENSITIVE_ORDER)
+            .thenComparing(Grupo::getId);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -20,12 +20,12 @@
 | 1 | Banco de dados e entidades | Concluída | 2026-10-07 |
 | 2 | Autenticação e usuários | Concluída | 2026-10-07 |
 | 3 | Grupos (CRUD) | Concluída | 2026-10-08 |
-| 4 | Motoristas e turmas (CRUD) | Não iniciada | |
-| 5 | Vínculo e remoção de alunos | Não iniciada | |
-| 6 | Plano do dia do aluno | Não iniciada | |
-| 7 | Listagens do dia e visibilidade | Não iniciada | |
-| 8 | Notificações push | Não iniciada | |
-| 9 | Dados de demonstração e fechamento | Não iniciada | |
+| 4 | Motoristas e turmas (CRUD) | Concluída | 2026-10-19 |
+| 5 | Vínculo e remoção de alunos | Concluída | 2026-11-02 |
+| 6 | Plano do dia do aluno | Concluída | 2026-11-02 |
+| 7 | Listagens do dia e visibilidade | Concluída | 2026-11-02 |
+| 8 | Notificações push | Concluída | 2026-11-03 |
+| 9 | Dados de demonstração e fechamento | Em andamento | |
 
 Valores de status: Não iniciada, Em andamento, Concluída.
 
@@ -124,156 +124,156 @@ Valores de status: Não iniciada, Em andamento, Concluída.
 ## Etapa 4 — Motoristas e turmas: CRUD
 
 **Construção**
-- [ ] `POST /admin/motoristas`
-- [ ] `GET /admin/motoristas`
-- [ ] `GET /admin/turmas` (lista cadastral de todas as turmas, com `totalAlunos`)
-- [ ] `POST /admin/turmas` (com `nome`)
-- [ ] `PUT /admin/turmas/{id}` (nome, número da van, capacidade e motorista)
-- [ ] Validação do `nome` da turma: obrigatório, sem espaços nas pontas, de 1 a 60 caracteres
-- [ ] `DELETE /admin/turmas/{id}`
-- [ ] `GET /turmas/{id}` (dados da turma, grupo, motorista e alunos ativos em ordem alfabética)
-- [ ] `ValidadorConflitoDeGrupo` com a regra da RN08 para motoristas
-- [ ] Validação de que `motoristaId` é um usuário ativo com papel `MOTORISTA`
+- [x] `POST /admin/motoristas`
+- [x] `GET /admin/motoristas`
+- [x] `GET /admin/turmas` (lista cadastral de todas as turmas, com `totalAlunos`)
+- [x] `POST /admin/turmas` (com `nome`)
+- [x] `PUT /admin/turmas/{id}` (nome, número da van, capacidade e motorista)
+- [x] Validação do `nome` da turma: obrigatório, sem espaços nas pontas, de 1 a 60 caracteres
+- [x] `DELETE /admin/turmas/{id}`
+- [x] `GET /turmas/{id}` (dados da turma, grupo, motorista e alunos ativos em ordem alfabética)
+- [x] `ValidadorConflitoDeGrupo` com a regra da RN08 para motoristas
+- [x] Validação de que `motoristaId` é um usuário ativo com papel `MOTORISTA`
 
 **Critérios de aceite**
-- [ ] Admin cadastra motorista, cria turma, altera dados cadastrais e troca o motorista
-- [ ] Mesmo motorista em duas turmas do mesmo grupo devolve 409 `CONFLITO_GRUPO_MOTORISTA` na criação
-- [ ] O mesmo conflito devolve 409 na troca de motorista
-- [ ] Mesmo motorista em turmas de grupos diferentes é aceito
-- [ ] Turma sem nome, com nome em branco ou com mais de 60 caracteres devolve 400
-- [ ] Duas turmas com o mesmo `nome` ou o mesmo `numeroVan` no mesmo grupo são aceitas
-- [ ] Alterar o nome pela edição reflete em `GET /turmas/{id}`
-- [ ] Excluir turma devolve 204 e remove vínculos, viagens e confirmações dela
-- [ ] Depois da exclusão, o motorista e os alunos podem entrar em outra turma do mesmo grupo
-- [ ] `GET /turmas/{id}` respeita a visibilidade (403 para quem não pode ver)
-- [ ] `GET /admin/turmas` devolve todas as turmas para o admin, com `totalAlunos` contando só vínculos ativos, e 403 para não-admin
+- [x] Admin cadastra motorista, cria turma, altera dados cadastrais e troca o motorista
+- [x] Mesmo motorista em duas turmas do mesmo grupo devolve 409 `CONFLITO_GRUPO_MOTORISTA` na criação
+- [x] O mesmo conflito devolve 409 na troca de motorista
+- [x] Mesmo motorista em turmas de grupos diferentes é aceito
+- [x] Turma sem nome, com nome em branco ou com mais de 60 caracteres devolve 400
+- [x] Duas turmas com o mesmo `nome` ou o mesmo `numeroVan` no mesmo grupo são aceitas
+- [x] Alterar o nome pela edição reflete em `GET /turmas/{id}`
+- [x] Excluir turma devolve 204 e remove vínculos, viagens e confirmações dela
+- [x] Depois da exclusão, o motorista e os alunos podem entrar em outra turma do mesmo grupo
+- [x] `GET /turmas/{id}` respeita a visibilidade (403 para quem não pode ver)
+- [x] `GET /admin/turmas` devolve todas as turmas para o admin, com `totalAlunos` contando só vínculos ativos, e 403 para não-admin
 
 ---
 
 ## Etapa 5 — Vínculo e remoção de alunos
 
 **Construção**
-- [ ] `GET /admin/alunos?busca=&turmaId=` com `situacao` (`DISPONIVEL` ou `CONFLITO_NO_GRUPO`) e turmas atuais de cada aluno
-- [ ] `turmaId` opcional em `GET /admin/alunos`: sem ele, listagem geral de alunos ativos (tela D10), sem `situacao`
-- [ ] `POST /admin/turmas/{id}/alunos` (lote, tudo ou nada)
-- [ ] `DELETE /admin/turmas/{id}/alunos/{alunoId}` (desativa o vínculo)
-- [ ] RN08 para alunos no mesmo `ValidadorConflitoDeGrupo`
-- [ ] Validação de que só usuários ativos com papel `ALUNO` são vinculados
-- [ ] Reativação do vínculo inativo em vez de criar outro registro
+- [x] `GET /admin/alunos?busca=&turmaId=` com `situacao` (`DISPONIVEL` ou `CONFLITO_NO_GRUPO`) e turmas atuais de cada aluno
+- [x] `turmaId` opcional em `GET /admin/alunos`: sem ele, listagem geral de alunos ativos (tela D10), sem `situacao`
+- [x] `POST /admin/turmas/{id}/alunos` (lote, tudo ou nada)
+- [x] `DELETE /admin/turmas/{id}/alunos/{alunoId}` (desativa o vínculo)
+- [x] RN08 para alunos no mesmo `ValidadorConflitoDeGrupo`
+- [x] Validação de que só usuários ativos com papel `ALUNO` são vinculados
+- [x] Reativação do vínculo inativo em vez de criar outro registro
 
 **Critérios de aceite**
-- [ ] Vincular dois alunos de uma vez funciona, e eles aparecem em `GET /turmas/{id}`
-- [ ] Aluno já vinculado a outra turma do mesmo grupo devolve 409 `CONFLITO_GRUPO_ALUNO`, e ninguém do lote é vinculado
-- [ ] Aluno pode estar em turmas de grupos diferentes
-- [ ] Tentar vincular um motorista como aluno é rejeitado
-- [ ] Remover e vincular de novo reutiliza o mesmo registro
-- [ ] Aluno removido deixa de aparecer em `GET /turmas/{id}`
-- [ ] A busca filtra por nome e por e-mail, e não lista quem já está na turma
-- [ ] Sem `turmaId`, a lista traz alunos com e sem vínculo, com `turmas` vazia para quem não tem vínculo ativo e `situacao` nula
+- [x] Vincular dois alunos de uma vez funciona, e eles aparecem em `GET /turmas/{id}`
+- [x] Aluno já vinculado a outra turma do mesmo grupo devolve 409 `CONFLITO_GRUPO_ALUNO`, e ninguém do lote é vinculado
+- [x] Aluno pode estar em turmas de grupos diferentes
+- [x] Tentar vincular um motorista como aluno é rejeitado
+- [x] Remover e vincular de novo reutiliza o mesmo registro
+- [x] Aluno removido deixa de aparecer em `GET /turmas/{id}`
+- [x] A busca filtra por nome e por e-mail, e não lista quem já está na turma
+- [x] Sem `turmaId`, a lista traz alunos com e sem vínculo, com `turmas` vazia para quem não tem vínculo ativo e `situacao` nula
 
 ---
 
 ## Etapa 6 — Plano do dia do aluno
 
 **Construção**
-- [ ] `GET /aluno/turmas` (turmas do aluno com resumo do plano de hoje)
-- [ ] `GET /aluno/turmas/{turmaId}/plano` (com o bloco `acoes`)
-- [ ] `PUT /aluno/turmas/{turmaId}/plano/ida`
-- [ ] `PUT /aluno/turmas/{turmaId}/plano/volta`
-- [ ] `PUT /aluno/turmas/{turmaId}/plano/status-volta`
-- [ ] `PlanoDoDiaService` usando o `Clock` injetado
-- [ ] Criação da `VIAGEM` e da `CONFIRMACAO` sob demanda, na primeira marcação
-- [ ] Tratamento da criação simultânea da viagem (restrição única)
-- [ ] Publicação do evento `IdaCanceladaAposSaida`
-- [ ] `atualizado_em` gravado a cada alteração
+- [x] `GET /aluno/turmas` (turmas do aluno com resumo do plano de hoje)
+- [x] `GET /aluno/turmas/{turmaId}/plano` (com o bloco `acoes`)
+- [x] `PUT /aluno/turmas/{turmaId}/plano/ida`
+- [x] `PUT /aluno/turmas/{turmaId}/plano/volta`
+- [x] `PUT /aluno/turmas/{turmaId}/plano/status-volta`
+- [x] `PlanoDoDiaService` usando o `Clock` injetado
+- [x] Criação da `VIAGEM` e da `CONFIRMACAO` sob demanda, na primeira marcação
+- [x] Tratamento da criação simultânea da viagem (restrição única)
+- [x] Publicação do evento `IdaCanceladaAposSaida`
+- [x] `atualizado_em` gravado a cada alteração
 
 **Critérios de aceite** (grupo com ida 18:10 e volta 22:30, relógio fixo)
-- [ ] 17:00, incluir ida e volta: as duas marcadas, status `EM_AULA`, viagem criada
-- [ ] 17:30, cancelar ida: ida desmarcada, `cancelouAposSaida = false`, nenhum evento
-- [ ] 18:09, incluir ida: aceito
-- [ ] 18:10, incluir ida: 422 `IDA_ENCERRADA`
-- [ ] 18:30, cancelar ida marcada: `cancelouAposSaida = true`, um evento publicado
-- [ ] 18:31, incluir ida de novo: 422 `IDA_ENCERRADA`
-- [ ] 18:30, cancelar ida não marcada: 200 sem alteração, nenhum evento
-- [ ] 19:00, incluir volta: aceito
-- [ ] 21:00, status `LIBERADO` com volta marcada: aceito
-- [ ] 21:00, status `LIBERADO` sem volta marcada: 422 `VOLTA_NAO_INCLUIDA`
-- [ ] 22:29, cancelar volta: aceito
-- [ ] 22:30, qualquer alteração (inclusive cancelar a ida): 422 `DIA_ENCERRADO`
-- [ ] Aluno sem vínculo ativo com a turma: 403
-- [ ] `GET` do plano não cria viagem nem confirmação
-- [ ] Marcar o que já está marcado devolve 200 sem alteração
-- [ ] O bloco `acoes` está correto em cada um dos estados das telas B1 a B7
-- [ ] `GET /aluno/turmas` devolve lista vazia para aluno sem vínculo
+- [x] 17:00, incluir ida e volta: as duas marcadas, status `EM_AULA`, viagem criada
+- [x] 17:30, cancelar ida: ida desmarcada, `cancelouAposSaida = false`, nenhum evento
+- [x] 18:09, incluir ida: aceito
+- [x] 18:10, incluir ida: 422 `IDA_ENCERRADA`
+- [x] 18:30, cancelar ida marcada: `cancelouAposSaida = true`, um evento publicado
+- [x] 18:31, incluir ida de novo: 422 `IDA_ENCERRADA`
+- [x] 18:30, cancelar ida não marcada: 200 sem alteração, nenhum evento
+- [x] 19:00, incluir volta: aceito
+- [x] 21:00, status `LIBERADO` com volta marcada: aceito
+- [x] 21:00, status `LIBERADO` sem volta marcada: 422 `VOLTA_NAO_INCLUIDA`
+- [x] 22:29, cancelar volta: aceito
+- [x] 22:30, qualquer alteração (inclusive cancelar a ida): 422 `DIA_ENCERRADO`
+- [x] Aluno sem vínculo ativo com a turma: 403
+- [x] `GET` do plano não cria viagem nem confirmação
+- [x] Marcar o que já está marcado devolve 200 sem alteração
+- [x] O bloco `acoes` está correto em cada um dos estados das telas B1 a B7
+- [x] `GET /aluno/turmas` devolve lista vazia para aluno sem vínculo
 
 ---
 
 ## Etapa 7 — Listagens do dia e visibilidade
 
 **Construção**
-- [ ] `GET /motorista/turmas` (turmas do motorista com contadores)
-- [ ] `GET /turmas/{id}/hoje` (contadores, `listaIda`, `listaVolta`, `semConfirmacoes`)
-- [ ] `GET /grupos/{id}/hoje` (todas as turmas do grupo, com `minhaTurma` e `voce`)
-- [ ] Regras de visibilidade RN10, RN11 e RN12 no `ControleDeAcesso`
-- [ ] Consulta única das confirmações do dia, sem consultas em cascata
+- [x] `GET /motorista/turmas` (turmas do motorista com contadores)
+- [x] `GET /turmas/{id}/hoje` (contadores, `listaIda`, `listaVolta`, `semConfirmacoes`)
+- [x] `GET /grupos/{id}/hoje` (todas as turmas do grupo, com `minhaTurma` e `voce`)
+- [x] Regras de visibilidade RN10, RN11 e RN12 no `ControleDeAcesso`
+- [x] Consulta única das confirmações do dia, sem consultas em cascata
 
 **Critérios de aceite**
-- [ ] Lista da ida traz quem tem ida marcada e quem cancelou depois da saída, este com `CANCELADO_APOS_SAIDA`
-- [ ] `vaoNaIda` não conta o cancelado tardio; `canceladosAposSaida` conta
-- [ ] Lista da volta traz só quem tem volta marcada, com liberados primeiro
-- [ ] `liberados` conta apenas volta marcada com status `LIBERADO`
-- [ ] Quem não declarou o plano não aparece em nenhuma lista
-- [ ] Confirmação de vínculo inativo não aparece
-- [ ] Turma sem confirmações devolve `semConfirmacoes = true` e listas vazias
-- [ ] Nenhuma consulta cria viagem
-- [ ] Aluno consulta o próprio grupo e recebe 403 em grupo sem vínculo
-- [ ] Motorista consulta turmas do grupo em que atua e recebe 403 fora dele
-- [ ] Admin consulta qualquer turma e qualquer grupo
-- [ ] O selo `voce` aparece só no item do aluno autenticado
-- [ ] Motorista-chefe que não conduz turma recebe lista vazia em `GET /motorista/turmas`
+- [x] Lista da ida traz quem tem ida marcada e quem cancelou depois da saída, este com `CANCELADO_APOS_SAIDA`
+- [x] `vaoNaIda` não conta o cancelado tardio; `canceladosAposSaida` conta
+- [x] Lista da volta traz só quem tem volta marcada, com liberados primeiro
+- [x] `liberados` conta apenas volta marcada com status `LIBERADO`
+- [x] Quem não declarou o plano não aparece em nenhuma lista
+- [x] Confirmação de vínculo inativo não aparece
+- [x] Turma sem confirmações devolve `semConfirmacoes = true` e listas vazias
+- [x] Nenhuma consulta cria viagem
+- [x] Aluno consulta o próprio grupo e recebe 403 em grupo sem vínculo
+- [x] Motorista consulta turmas do grupo em que atua e recebe 403 fora dele
+- [x] Admin consulta qualquer turma e qualquer grupo
+- [x] O selo `voce` aparece só no item do aluno autenticado
+- [x] Motorista-chefe que não conduz turma recebe lista vazia em `GET /motorista/turmas`
 
 ---
 
 ## Etapa 8 — Notificações push
 
 **Construção**
-- [ ] `PUT /me/push-token`
-- [ ] `DELETE /me/push-token`
-- [ ] Interface `PushGateway` e implementação que chama o Expo Push Service
-- [ ] Campo `data` (`tipo` e `turmaId`) no push de cancelamento tardio e no lembrete
-- [ ] Implementação falsa do gateway para os testes
-- [ ] Token apagado quando o Expo responde `DeviceNotRegistered`
-- [ ] Listener do evento `IdaCanceladaAposSaida`, executado depois do commit
-- [ ] Texto do push de cancelamento tardio conforme a tela E1, montado com o nome da turma
-- [ ] Tarefa agendada do lembrete, a cada minuto
-- [ ] Propriedades `app.lembrete.antecedencia-minutos` (120) e `app.lembrete.dias` (segunda a sexta)
-- [ ] Texto do lembrete conforme a tela E1
+- [x] `PUT /me/push-token`
+- [x] `DELETE /me/push-token`
+- [x] Interface `PushGateway` e implementação que chama o Expo Push Service
+- [x] Campo `data` (`tipo` e `turmaId`) no push de cancelamento tardio e no lembrete
+- [x] Implementação falsa do gateway para os testes
+- [x] Token apagado quando o Expo responde `DeviceNotRegistered`
+- [x] Listener do evento `IdaCanceladaAposSaida`, executado depois do commit
+- [x] Texto do push de cancelamento tardio conforme a tela E1, montado com o nome da turma
+- [x] Tarefa agendada do lembrete, a cada minuto
+- [x] Propriedades `app.lembrete.antecedencia-minutos` (120) e `app.lembrete.dias` (segunda a sexta)
+- [x] Texto do lembrete conforme a tela E1
 
 **Critérios de aceite**
-- [ ] Cancelar a ida depois da saída gera exatamente um envio, para o motorista responsável da turma
-- [ ] O motorista-chefe não recebe o push quando não é o responsável pela turma
-- [ ] Cancelar a ida antes da saída não gera envio
-- [ ] Se o gateway lançar erro, o cancelamento continua gravado
-- [ ] Com relógio em 16:10 e ida às 18:10, o lembrete vai só para quem não marcou nada
-- [ ] Quem já marcou ida ou volta não recebe o lembrete
-- [ ] Um minuto antes ou depois do horário de disparo, nada é enviado
-- [ ] Fora dos dias configurados, nada é enviado
-- [ ] Usuário sem token é ignorado sem erro
-- [ ] O gateway falso registra o `data` correto nos dois tipos de push
+- [x] Cancelar a ida depois da saída gera exatamente um envio, para o motorista responsável da turma
+- [x] O motorista-chefe não recebe o push quando não é o responsável pela turma
+- [x] Cancelar a ida antes da saída não gera envio
+- [x] Se o gateway lançar erro, o cancelamento continua gravado
+- [x] Com relógio em 16:10 e ida às 18:10, o lembrete vai só para quem não marcou nada
+- [x] Quem já marcou ida ou volta não recebe o lembrete
+- [x] Um minuto antes ou depois do horário de disparo, nada é enviado
+- [x] Fora dos dias configurados, nada é enviado
+- [x] Usuário sem token é ignorado sem erro
+- [x] O gateway falso registra o `data` correto nos dois tipos de push
 
 ---
 
 ## Etapa 9 — Dados de demonstração e fechamento
 
 **Construção**
-- [ ] Carga de dados no perfil `dev` com o cenário das telas (grupos Manhã e Noite, motoristas, turmas, alunos e vínculos, e alunos sem vínculo para as telas D6 e D10)
-- [ ] Teste de ponta a ponta com MockMvc e Testcontainers (do cadastro do grupo até a lista com cancelamento tardio)
-- [ ] Revisão da RNF08: cada regra das etapas 4 a 6 tem teste que chama a API diretamente
-- [ ] README com instruções de execução, variáveis de ambiente, Swagger, usuários de demonstração e `app.relogio.fixo`
-- [ ] API escutando em `0.0.0.0` para acesso pelo celular na rede local
+- [x] Carga de dados no perfil `dev` com o cenário das telas (grupos Manhã e Noite, motoristas, turmas, alunos e vínculos, e alunos sem vínculo para as telas D6 e D10)
+- [x] Teste de ponta a ponta com MockMvc e Testcontainers (do cadastro do grupo até a lista com cancelamento tardio)
+- [x] Revisão da RNF08: cada regra das etapas 4 a 6 tem teste que chama a API diretamente
+- [x] README com instruções de execução, variáveis de ambiente, Swagger, usuários de demonstração e `app.relogio.fixo`
+- [x] API escutando em `0.0.0.0` para acesso pelo celular na rede local
 
 **Critérios de aceite**
-- [ ] `./gradlew test` passa por completo
+- [x] `./gradlew test` passa por completo
 - [ ] Com o perfil `dev`, todas as telas do design podem ser percorridas usando apenas o Swagger *(verificação manual)*
 - [ ] O app, rodando no celular, consegue fazer login na API da máquina local *(verificação manual)*
 
@@ -341,3 +341,53 @@ Registrar aqui tudo o que for decidido na implementação e não estiver no plan
 | 2026-10-08 | 3 | Horários aceitos e devolvidos só como `HH:mm` (ex.: `18:10`; `18:10:00` é rejeitado) | Convenção 6 da seção 2.3 |
 | 2026-10-08 | 3 | Em `GET /grupos/{id}`, a existência é conferida antes da visibilidade (inexistente → 404, existente sem acesso → 403) | Mesma ordem prevista no `ControleDeAcesso` |
 | 2026-10-13 | 4, 5, 7, 8 e 9 | Plano revisado para a versão 4: `GET /admin/turmas` na etapa 4; `turmaId` opcional em `GET /admin/alunos` na etapa 5; `GET /admin/turmas/hoje` removido da etapa 7; campo `data` no push na etapa 8; alunos sem vínculo na carga da etapa 9. Itens correspondentes acrescentados acima, e o item de `GET /admin/turmas/hoje` retirado | Revisão das telas feita junto com o plano do frontend (pontos 11 a 14 do plano). As etapas concluídas (0 a 3) não mudam |
+| 2026-10-19 | 4 | `POST /admin/motoristas` devolve 201 e reaproveita as regras do cadastro: e-mail normalizado, senha de 6 a 72 caracteres, 409 `EMAIL_JA_CADASTRADO`. Campos `admin` e `papel` no corpo são ignorados | Mesmo comportamento do `POST /auth/cadastro`; o chefe não cria outro chefe |
+| 2026-10-19 | 4 | `GET /admin/motoristas` devolve `id`, `nome`, `email` e `admin` (marca o chefe), em ordem alfabética | O plano do app pede `id`, `nome` e `email`; `admin` ajuda a identificar o chefe nos seletores |
+| 2026-10-19 | 4 | `POST` e `PUT /admin/turmas` e `GET /turmas/{id}` devolvem o mesmo formato (`id`, `nome`, `numeroVan`, `capacidade`, `grupo`, `motorista`, `alunos`). `POST` devolve 201 | Um único formato de turma para as telas D4, D5 e D5a |
+| 2026-10-19 | 4 | `PUT /admin/turmas/{id}` substitui todos os dados: `nome` e `motoristaId` obrigatórios; `numeroVan` ou `capacidade` ausentes ficam nulos | Semântica de PUT; os dois campos são opcionais desde a Etapa 1 |
+| 2026-10-19 | 4 | `numeroVan` e `capacidade`, quando informados, precisam ser maiores que zero (400 `VALIDACAO`) | Evitar dados cadastrais sem sentido |
+| 2026-10-19 | 4 | Espaços nas pontas do `nome` da turma são retirados antes da validação; o limite de 60 vale para o nome gravado | Mesmo tratamento dado ao nome do grupo |
+| 2026-10-19 | 4 | `grupoId` inexistente ou `motoristaId` que não seja motorista ativo devolvem 400 `VALIDACAO` com o campo em `campos`; 404 fica só para o `id` da rota | São campos do corpo, não o recurso da rota |
+| 2026-10-19 | 4 | A mensagem do 409 `CONFLITO_GRUPO_MOTORISTA` cita a turma em conflito; editar sem trocar o motorista não passa pelo validador | Mensagem útil na tela; a troca é o único caso que pode gerar conflito na edição |
+| 2026-10-19 | 4 | `GET /admin/turmas` em ordem de grupo (mesma de `GET /grupos`, com o `id` do grupo como desempate) e depois nome da turma sem diferenciar maiúsculas | Turmas do mesmo grupo sempre juntas na tela D3 |
+| 2026-10-19 | 4 | O critério de alunos livres após a exclusão foi testado conferindo que não sobra vínculo ativo no grupo e vinculando o aluno pelo repositório | `POST /admin/turmas/{id}/alunos` é da Etapa 5 |
+| 2026-11-02 | 5 | `GET /admin/alunos` devolve por item `id`, `nome`, `email`, `turmas` (vínculos ativos, cada uma com `id`, `nome` e `grupo` no mesmo formato de `GET /admin/turmas`), `situacao` e `turmaEmConflito` (`id`, `nome` e `grupo`; só quando a situação é `CONFLITO_NO_GRUPO`). Sem `turmaId`, `situacao` e `turmaEmConflito` vêm `null` | O app monta "Manhã · Van 2" com o grupo; o nome da turma em conflito vem em campo próprio, além da mensagem |
+| 2026-11-02 | 5 | A `busca` procura o trecho no nome ou no e-mail, sem diferenciar maiúsculas nem acentos (collation do banco); `busca` em branco é ignorada | "joao" encontra "João", como o usuário digita no celular |
+| 2026-11-02 | 5 | `turmaId` inexistente em `GET /admin/alunos` devolve 400 `VALIDACAO` com `campos.turmaId` | Mesmo critério da Etapa 4: 404 fica só para o `id` da rota |
+| 2026-11-02 | 5 | `POST /admin/turmas/{id}/alunos` devolve 200 com a turma atualizada (mesmo formato de `GET /turmas/{id}`). Ids repetidos contam uma vez; aluno já ativo na turma é ignorado, sem erro | A tela D5 recebe a lista nova sem outra chamada; repetir o envio não quebra nada |
+| 2026-11-02 | 5 | Id que não existe ou não é de aluno ativo (inclusive motorista) devolve 400 `VALIDACAO` com `campos.alunoIds` citando o id; `alunoIds` ausente, vazio ou com `null` também devolve 400. Em qualquer erro, ninguém do lote é vinculado | Mesmo critério da Etapa 4 para campos do corpo; tudo ou nada do plano |
+| 2026-11-02 | 5 | A mensagem do 409 `CONFLITO_GRUPO_ALUNO` cita o nome do aluno e a turma em conflito | O plano pede para informar qual aluno causou o conflito |
+| 2026-11-02 | 5 | `DELETE /admin/turmas/{id}/alunos/{alunoId}` devolve 204; turma inexistente ou aluno sem vínculo ativo nela devolve 404 `NAO_ENCONTRADO` | O vínculo é o recurso da rota |
+| 2026-11-02 | 5 | No vínculo, as linhas dos alunos em `usuario` são travadas (`SELECT ... FOR UPDATE`, em ordem de id) até o fim da transação. Não há teste automatizado de concorrência para esse caso | O banco não tem restrição única de aluno por grupo (só por turma), então sem a trava dois vínculos simultâneos do mesmo aluno em turmas do mesmo grupo passariam pela RN08. Não altera o esquema |
+| 2026-11-02 | 6 | `GET /aluno/turmas` devolve por item `turma` (`id`, `nome` e `grupo` com período e horários), `motorista` (`id` e `nome`), `incluiIda` e `incluiVolta`, em ordem de grupo (mesma de `GET /grupos`) e nome da turma | O plano lista os dados, mas não o formato; `turma` segue o mesmo formato do campo `turma` do plano |
+| 2026-11-02 | 6 | A partir da saída da volta, todo `PUT` do plano devolve 422 `DIA_ENCERRADO`, mesmo quando o pedido não mudaria nada (ex.: desmarcar o que já está desmarcado) | O dia fica encerrado para qualquer ação (RN15); antes disso, ação repetida devolve 200 sem alterar nada |
+| 2026-11-02 | 6 | `PUT .../status-volta` sem a volta marcada devolve 422 `VOLTA_NAO_INCLUIDA` mesmo que o status pedido seja o atual | RN07: o status só existe para quem vai na volta |
+| 2026-11-02 | 6 | Turma inexistente nas rotas `/aluno/turmas/{turmaId}/...` devolve 404; turma existente sem vínculo ativo do aluno devolve 403 | Mesma ordem do `ControleDeAcesso` (existência antes da permissão) |
+| 2026-11-02 | 6 | `incluir` ausente ou `status` ausente ou fora de `EM_AULA`/`LIBERADO` devolve 400 `VALIDACAO` | Validação de formato no controller |
+| 2026-11-02 | 6 | Mensagens: `IDA_ENCERRADA` usa o texto da seção 2.3; `VOLTA_NAO_INCLUIDA` "Inclua a volta no plano de hoje antes de informar o status."; `DIA_ENCERRADO` "A volta de hoje já saiu. O plano não pode mais ser alterado." | O app pode exibir a `mensagem` direto |
+| 2026-11-02 | 6 | Evento `IdaCanceladaAposSaida` com `turmaId`, `alunoId`, `confirmacaoId` e `data`, publicado com o `ApplicationEventPublisher` dentro da transação | A etapa 8 decide como consumir (o natural é `@TransactionalEventListener` depois do commit) |
+| 2026-11-02 | 6 | A viagem é criada em transação própria (`CriadorDeViagem`, `REQUIRES_NEW`); se a restrição única falhar, a viagem é relida com trava de leitura. Cada `PUT` trava a linha do vínculo do aluno (`turma_aluno`) até o fim | Uma falha de restrição dentro da transação principal a marcaria para rollback; a releitura com trava enxerga a viagem gravada pela outra transação. A trava do vínculo evita duas confirmações do mesmo aluno em cliques simultâneos. Coberto pelo teste com 6 primeiras confirmações simultâneas |
+| 2026-11-02 | 6 | `atualizado_em` gravado sem frações de segundo (a coluna é `DATETIME`); ação repetida não muda `atualizado_em` | Valor igual ao que o banco guarda; "sem alteração" vale também para a data de atualização |
+| 2026-11-02 | 6 | Os critérios foram testados pela API (MockMvc) com um relógio de teste ajustável (`RelogioDeTeste`, `@Primary` só nos testes), em vez de testes unitários do service | Cobre ao mesmo tempo service, controller, segurança e banco real, com o relógio fixo em cada passo |
+| 2026-11-02 | 7 | Formatos alinhados aos tipos já existentes no app (`TurmaResumo`, `TurmaListaHoje` e `GrupoHoje` em `boragora-mobile/src/types/turma.ts`): `GET /motorista/turmas` traz `id`, `nome`, `grupo`, `motorista`, `contadores` e `semConfirmacoes`, sem as listas; `GET /turmas/{id}/hoje` acrescenta `listaIda` e `listaVolta`; `GET /grupos/{id}/hoje` traz os dados do grupo, `minhaTurma` (`id` e `nome`, ou `null`) e `turmas`, cada uma com `id`, `nome`, `motorista`, `minhaTurma` (verdadeiro ou falso), `contadores`, `semConfirmacoes` e as duas listas | O app já tinha os tipos montados sobre o plano |
+| 2026-11-02 | 7 | O campo `voce` vem em todos os itens das listas, nas duas rotas (`false` para quem não é o aluno autenticado, e sempre `false` para motorista) | O tipo do app usa `voce` também em `TurmaListaHoje` |
+| 2026-11-02 | 7 | `semConfirmacoes` é verdadeiro quando as duas listas estão vazias. Um cancelado tardio sozinho deixa `semConfirmacoes = false` | O plano diz "ninguém está marcado"; com o cancelado tardio o motorista precisa ver o aviso, e a tela C5 esconderia a lista |
+| 2026-11-02 | 7 | `GET /motorista/turmas` em ordem de grupo e nome da turma (mesma de `GET /admin/turmas`); turmas de `GET /grupos/{id}/hoje` em ordem de nome | Ordem previsível nas telas |
+| 2026-11-02 | 7 | Ordem alfabética das listas pelo nome do aluno em português, ignorando acentos ("Álvaro" antes de "Bruno") | Nomes com acento no começo ficariam no fim da lista com a comparação comum |
+| 2026-11-02 | 7 | `minhaTurma` do motorista é a turma que ele conduz no grupo; do aluno, a turma em que tem vínculo ativo. Admin que não conduz turma no grupo recebe `null` e `false` | Mesmo critério de `minhaTurma` em `GET /grupos` |
+| 2026-11-02 | 7 | Turma ou grupo inexistente devolve 404 antes da checagem de visibilidade | Mesma ordem das etapas 3 e 4 |
+| 2026-11-03 | 8 | `PUT` e `DELETE /me/push-token` devolvem 204. O token precisa estar no formato `ExponentPushToken[...]` ou `ExpoPushToken[...]` (até 255 caracteres, espaços nas pontas retirados); fora disso, 400 `VALIDACAO`. `DELETE` sem token gravado também devolve 204 | Recusar na entrada o que o Expo recusaria no envio; sair da conta não pode falhar |
+| 2026-11-03 | 8 | Ao registrar um token que já está em outra conta, ele é retirado da conta anterior | Um aparelho recebe push só da última conta que entrou nele, mesmo que o app não tenha chamado o `DELETE` ao trocar de conta |
+| 2026-11-03 | 8 | O push de cancelamento tardio é enviado na mesma requisição do cancelamento, logo depois do commit, com tempo máximo de 5 s para conexão e leitura (`app.expo.timeout`). Qualquer falha, inclusive ao montar a mensagem, só vai para o log | Simples e sem fila; o tempo máximo evita que um Expo lento segure o aluno. O cancelamento já está gravado quando o envio acontece |
+| 2026-11-03 | 8 | Só o recibo imediato (ticket) do Expo é conferido para `DeviceNotRegistered`; os recibos posteriores (`getReceipts`) não são consultados | Consultar os recibos exigiria guardar os ids dos envios, sem tabela no MER. O token inválido também cai no ticket na maioria dos casos |
+| 2026-11-03 | 8 | O lembrete calcula o horário de saída como "agora + antecedência" e usa o dia dessa saída para conferir o dia da semana e as confirmações | Uma ida logo depois da meia-noite tem o lembrete no dia anterior, e é o dia da ida que importa |
+| 2026-11-03 | 8 | Quem cancelou a ida antes da saída (tudo desmarcado) recebe o lembrete | RN04: tudo desmarcado é igual a não ter declarado |
+| 2026-11-03 | 8 | `app.lembrete.agendado` (padrão `true`) liga a tarefa a cada minuto; no perfil `test` fica `false` e os testes chamam o lembrete diretamente com o relógio fixo. As outras propriedades: `app.lembrete.antecedencia-minutos` (`LEMBRETE_ANTECEDENCIA_MINUTOS`), `app.lembrete.dias` (`LEMBRETE_DIAS`, ex.: `MONDAY,TUESDAY`) e `app.expo.url` (`EXPO_PUSH_URL`) | Sem isso a tarefa real rodaria durante os testes com o relógio de teste |
+| 2026-11-03 | 8 | `data` do push: `{"tipo": "CANCELAMENTO_TARDIO" \| "LEMBRETE", "turmaId": <número>}`; o push também vai com `sound: "default"` | Campo `data` da decisão 12; som padrão para o aviso ser notado |
+| 2026-11-03 | 8 | O gateway real foi testado contra um servidor HTTP local que responde como o Expo (sucesso, `DeviceNotRegistered`, outro erro e HTTP 500). O envio de verdade para o Expo fica para verificação manual com um aparelho | Os testes não acessam a internet |
+| 2026-11-03 | 9 | Carga de demonstração: Carlos Menezes conduz a Van 1 da Manhã e da Noite; Vanderlei Dias, a Van 2 da Manhã e da Noite. João Gabriel está em Manhã · Van 1 e Noite · Van 2. A Noite · Van 2 tem os oito alunos da tela C4 | Os dados falsos do app divergem entre si sobre quem conduz a Van 2 da Manhã; seguido o plano (Vanderlei na Manhã e na Noite, João em Manhã · Van 1 e Noite · Van 2) e a maioria dos mocks |
+| 2026-11-03 | 9 | A carga também cria as confirmações do dia em que roda na Noite · Van 2, com os contadores da tela C1 (5 vão, 7 voltam, 2 liberados, 1 cancelamento tardio da Camila Rocha; Rafael Lima sem plano) | Para as telas C1, C2, B3, B6 e B8 mostrarem o mesmo que o design sem nenhuma ação manual |
+| 2026-11-03 | 9 | Carga ligada por `app.demonstracao.carga` (`APP_DEMONSTRACAO`, padrão `true` só no `dev`), roda uma vez e é pulada se qualquer e-mail da carga já existir. Senha de todos: `senha123` | Não quebrar a subida em um banco local que já tenha alguns desses usuários |
+| 2026-11-03 | 9 | `server.address` configurável por `ENDERECO`, com padrão `0.0.0.0` | Acesso pelo celular na rede local. Conferido subindo o perfil `dev` e chamando `/health` pelo IP da máquina |
+| 2026-11-03 | 9 | Revisão da RNF08: as regras das etapas 4 a 6 são todas testadas chamando a API pelo MockMvc, com token: RN08 de motorista na criação e na troca e motorista ativo (`TurmaApiTest`); RN08 de aluno, papel `ALUNO` ativo, tudo ou nada e reativação (`VinculoApiTest`); RN02, RN03, RN05, RN07, RN14, RN15 e vínculo ativo (`PlanoDoDiaApiTest`). O teste de ponta a ponta é o `FluxoCompletoApiTest` | Nenhuma regra depende do app para ser aplicada |
+| 2026-11-03 | 9 | Etapa fica "Em andamento" até a equipe conferir os dois itens de verificação manual (percorrer as telas pelo Swagger e login pelo celular) | Regra do checklist: a etapa só é concluída com todos os itens marcados |

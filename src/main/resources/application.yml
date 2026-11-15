@@ -16,6 +16,8 @@ spring:
     time-zone: America/Sao_Paulo
 
 server:
+  # 0.0.0.0 aceita conexões de qualquer interface, para o app no celular acessar pela rede local.
+  address: ${ENDERECO:0.0.0.0}
   port: ${PORTA:8080}
 
 springdoc:
@@ -32,6 +34,12 @@ app:
     nome: ${ADMIN_NOME:}
     email: ${ADMIN_EMAIL:}
     senha: ${ADMIN_SENHA:}
+  lembrete:
+    # Lembrete do plano do dia: quantos minutos antes da saída da ida, e em quais dias.
+    antecedencia-minutos: ${LEMBRETE_ANTECEDENCIA_MINUTOS:120}
+    dias: ${LEMBRETE_DIAS:MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY}
+  expo:
+    url: ${EXPO_PUSH_URL:https://exp.host/--/api/v2/push/send}
 
 ---
 spring:
@@ -54,6 +62,9 @@ app:
   relogio:
     # Opcional. Ex.: 2026-10-05T18:30 congela o relógio nesse instante (fuso America/Sao_Paulo).
     fixo: ${APP_RELOGIO_FIXO:}
+  demonstracao:
+    # Cria o cenário das telas na primeira subida (ver CargaDeDemonstracao). false desliga.
+    carga: ${APP_DEMONSTRACAO:true}
 
 ---
 spring:
@@ -69,3 +80,6 @@ app:
     nome: Admin Teste
     email: admin@teste.com
     senha: senha-teste
+  lembrete:
+    # Os testes chamam o lembrete diretamente, com o relógio fixo.
+    agendado: false

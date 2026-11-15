@@ -60,7 +60,7 @@ public class AutenticacaoService {
         return new TokenResposta(tokens.emitir(usuario), UsuarioResposta.de(usuario));
     }
 
-    private static RegraDeNegocioException emailJaCadastrado() {
+    public static RegraDeNegocioException emailJaCadastrado() {
         return new RegraDeNegocioException("EMAIL_JA_CADASTRADO", HttpStatus.CONFLICT, "Já existe uma conta com este e-mail.");
     }
 }

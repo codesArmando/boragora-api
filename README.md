@@ -103,6 +103,7 @@ A carga também cria as confirmações **do dia em que roda** na Noite · Van 2,
 
 - A carga roda uma vez só: se qualquer e-mail da tabela já existir no banco, ela é pulada.
 - Para recriá-la: `docker compose down -v && docker compose up -d` e suba a API de novo.
+- Para os testes manuais, `scripts/banco-de-testes/` recria o mesmo cenário com as confirmações no dia de hoje, quantas vezes for preciso e sem apagar as tabelas. Veja o `LEIA-ME.txt` da pasta.
 - Para não criá-la: `APP_DEMONSTRACAO=false`.
 
 ## Configuração

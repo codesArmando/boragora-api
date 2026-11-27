@@ -1,0 +1,127 @@
+Banco dos testes manuais · Boragora
+===================================
+
+Esta pasta recria, em qualquer máquina, o mesmo banco usado no roteiro "Testes Manuais".
+
+Arquivos:
+- banco-de-testes.sql   os dados (usuários, grupos, turmas, vínculos e o plano do dia)
+- aplicar-banco.sh      aplica o banco no Linux ou macOS
+- aplicar-banco.ps1     aplica o banco no Windows (PowerShell)
+
+O que o script faz:
+- APAGA todos os dados do banco "boragora" (usuários, grupos, turmas, confirmações) e grava o cenário dos testes.
+- Não mexe nas tabelas: quem cria as tabelas é a API (Flyway), na primeira vez que ela sobe.
+- As confirmações ficam no dia de hoje. Para outro dia, passe a data (veja abaixo).
+- Pode ser rodado quantas vezes quiser. Cada vez volta tudo ao estado inicial, com os mesmos IDs.
+
+---
+
+Pré-requisitos
+
+- Docker com o Compose (o mesmo do README do boragora-api).
+- Os repositórios boragora-api e boragora-mobile clonados.
+- Esta pasta fica no boragora-api, em scripts/banco-de-testes. Os comandos do passo 3 rodam dentro dela.
+
+---
+
+Passo a passo
+
+1. Suba o banco, na pasta boragora-api:
+     docker compose up -d
+     docker compose ps            (espere aparecer "(healthy)")
+
+2. Se for a primeira vez nesta máquina, suba a API uma vez para criar as tabelas:
+     Linux/macOS: ./gradlew bootRun
+     Windows:     .\gradlew.bat bootRun
+   Espere a linha "Started ApiApplication" e pare com Ctrl+C.
+
+3. Aplique o banco, na pasta boragora-api/scripts/banco-de-testes:
+     Linux/macOS: ./aplicar-banco.sh
+     Windows:     .\aplicar-banco.ps1
+   O script pede confirmação antes de apagar. No fim, ele mostra uma tabela parecida com esta:
+     | dia_das_confirmacoes | usuarios | grupos | turmas | vinculos | confirmacoes |
+     | (data de hoje)       |       14 |      2 |      4 |        9 |            7 |
+
+   No Windows, se o PowerShell bloquear o script, rode antes (vale só para a janela aberta):
+     Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+4. Suba a API com o relógio que a fase do roteiro pede, sempre com a data do banco:
+     Linux/macOS: APP_RELOGIO_FIXO=$(date +%F)T19:00 ./gradlew bootRun
+     Windows:     $env:APP_RELOGIO_FIXO="2026-11-27T19:00"; .\gradlew.bat bootRun
+                  (troque 2026-11-27 pela data de hoje)
+
+5. No app (Expo Go): se você já estava logado antes de aplicar o banco pela primeira vez, toque em "Sair"
+   e entre de novo. O login guarda o ID do usuário, e os IDs mudaram.
+
+---
+
+Outro dia
+
+As confirmações precisam estar no mesmo dia do relógio da API. Para testar num dia diferente de hoje:
+     Linux/macOS: ./aplicar-banco.sh 2026-12-01
+     Windows:     .\aplicar-banco.ps1 -Dia 2026-12-01
+e suba a API com APP_RELOGIO_FIXO=2026-12-01T19:00.
+
+Se o banco foi aplicado ontem e você testa hoje, reaplique: senão as listas do dia aparecem vazias.
+
+---
+
+Sem os scripts (qualquer sistema)
+
+Se o container tiver outro nome ou os scripts não rodarem, envie o SQL direto:
+     docker exec -i boragora-mysql mysql --default-character-set=utf8mb4 -uboragora -pboragora boragora < banco-de-testes.sql
+No Windows (PowerShell):
+     Get-Content -Encoding UTF8 banco-de-testes.sql | docker exec -i boragora-mysql mysql --default-character-set=utf8mb4 -uboragora -pboragora boragora
+
+Variáveis aceitas pelos scripts (padrões iguais aos do docker-compose.yml):
+     BORAGORA_CONTAINER=boragora-mysql  DB_NOME=boragora  DB_USUARIO=boragora  DB_SENHA=boragora
+
+---
+
+O cenário
+
+Senha de todos: senha123. Admin: admin@boragora.local / admin123. Todos os e-mails terminam em @boragora.local.
+
+| ID | Nome                | E-mail     | Papel                                   |
+|----|---------------------|------------|-----------------------------------------|
+|  1 | Motorista-chefe     | admin@     | motorista-chefe (gestão)                |
+|  2 | Carlos Menezes      | carlos@    | motorista: Manhã · Van 1, Noite · Van 1 |
+|  3 | Vanderlei Dias      | vanderlei@ | motorista: Manhã · Van 2, Noite · Van 2 |
+|  4 | João Gabriel        | joao@      | aluno: Manhã · Van 1 e Noite · Van 2    |
+|  5 | Beatriz Souza       | beatriz@   | aluno: Noite · Van 2                    |
+|  6 | Camila Rocha        | camila@    | aluno: Noite · Van 2                    |
+|  7 | Larissa Costa       | larissa@   | aluno: Noite · Van 2                    |
+|  8 | Lucas Pereira       | lucas@     | aluno: Noite · Van 2                    |
+|  9 | Mariana Alves       | mariana@   | aluno: Noite · Van 2                    |
+| 10 | Pedro Henrique Dias | pedro@     | aluno: Noite · Van 2                    |
+| 11 | Rafael Lima         | rafael@    | aluno: Noite · Van 2 (não declarou)     |
+| 12 | Ana Beatriz Moura   | ana@       | aluno sem turma                         |
+| 13 | Diego Farias        | diego@     | aluno sem turma                         |
+| 14 | Vitor Sampaio       | vitor@     | aluno sem turma                         |
+
+Grupos: Manhã (ida 06:20, volta 12:10) e Noite (ida 18:10, volta 22:30).
+Turmas (ID): 1 Manhã · Van 1, 2 Manhã · Van 2 (sem alunos), 3 Noite · Van 1 (sem alunos), 4 Noite · Van 2.
+
+Plano do dia na Noite · Van 2:
+| Aluno    | Ida                        | Volta          |
+|----------|----------------------------|----------------|
+| Beatriz  | vai                        | volta, liberado|
+| Camila   | cancelou depois da saída   | volta, em aula |
+| João     | vai                        | volta, em aula |
+| Larissa  | vai                        | volta, liberado|
+| Lucas    | vai                        | volta, em aula |
+| Mariana  | vai                        | volta, em aula |
+| Pedro    | não vai                    | volta, em aula |
+| Rafael   | nada marcado               | nada marcado   |
+Total: 5 na ida, 7 na volta, 2 liberados, 1 cancelamento tardio.
+
+---
+
+Voltar ao banco anterior
+
+Antes de aplicar pela primeira vez, se quiser guardar o banco atual:
+     docker exec boragora-mysql mysqldump -uboragora -pboragora --no-tablespaces boragora > backup.sql
+Para restaurar:
+     docker exec -i boragora-mysql mysql -uboragora -pboragora boragora < backup.sql
+Para começar do zero (apaga até as tabelas; a API recria ao subir): na pasta boragora-api,
+     docker compose down -v && docker compose up -d
